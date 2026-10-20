@@ -102,7 +102,20 @@ button:hover { background: var(--vino); }
   display: flex;
   gap: 0.9rem;
   padding: 1rem 1.1rem;
-  background: rgba(255, 250, 243, 0.94);
+
+  /* 1. Fondo semitransparente para ver lo de atrás */
+  background-color: rgba(255, 255, 255, 0.13);
+  
+  /* 2. Desenfoque del contenido detrás del div */
+  -webkit-backdrop-filter: blur(10px); /* Soporte para Safari/Chrome antiguo */
+  backdrop-filter: blur(10px);
+  
+  /* Estilos opcionales para mejorar la estética */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #1f1f1f; /* Texto oscuro para contraste */
+
+
   border-left: 4px solid var(--vino-claro);
   border-radius: 12px;
 }
