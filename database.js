@@ -25,6 +25,16 @@ async function iniciarBaseDeDatos() {
       fecha TEXT NOT NULL
     )
   `);
+  // ALTER TABLE modifica una tabla que ya existe (aquí, agrega columnas).
+  // IF NOT EXISTS evita el error si las columnas ya fueron creadas, así que
+  // este código se puede ejecutar cada vez que arranca el servidor.
+  // Las columnas nuevas quedan vacías (NULL) en las notas que ya existían.
+  await pool.query(`
+    ALTER TABLE notas
+      ADD COLUMN IF NOT EXISTS titulo TEXT,
+      ADD COLUMN IF NOT EXISTS autor TEXT
+  `);
+
   console.log("Base de datos PostgreSQL lista");
 }
 

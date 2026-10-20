@@ -30,9 +30,21 @@ app.get("/api/notas", async function (req, res) {
 // POST /api/notas
 app.post("/api/notas", async function (req, res) {
   const texto = (req.body.texto || "").trim();
+  const titulo = (req.body.titulo || "").trim();
+  const autor = req.body.autor;
 
-  if (texto === "") {
-    return res.status(400).json({ error: "El texto no puede estar vacío" });
+  // Lista blanca: solo aceptamos estos dos autores. Así nadie puede
+  // enviar un nombre inventado saltándose el frontend.
+  const AUTORES_VALIDOS = ["lele", "mayita"];
+
+  if (texto === "" || titulo === "") {
+    return res.status(400).json({ error: "El título y el texto no pueden estar vacíos" });
+  }
+  if (titulo.length > 80) {
+    return res.status(400).json({ error: "El título es demasiado largo" });
+  }
+  if (!AUTORES_VALIDOS.includes(autor)) {
+    return res.status(400).json({ error: "El autor debe ser lele o mayita" });
   }
 
   const fecha = new Date().toLocaleString("es-CO");
@@ -43,8 +55,8 @@ app.post("/api/notas", async function (req, res) {
     // RETURNING * pide que la base de datos devuelva la fila recién creada,
     // con el id que ella misma asignó.
     const resultado = await pool.query(
-      "INSERT INTO notas (texto, fecha) VALUES ($1, $2) RETURNING *",
-      [texto, fecha]
+      "INSERT INTO notas (titulo, texto, autor, fecha) VALUES ($1, $2, $3, $4) RETURNING *",
+      [titulo, texto, autor, fecha]
     );
 
     // rows[0] es la primera (y única) fila devuelta.
