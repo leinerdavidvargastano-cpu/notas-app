@@ -3,7 +3,7 @@ const express = require("express");
 const db = require("./database");
 
 const app = express();
-const PUERTO = 3000;
+const PUERTO = process.env.PORT || 3000;
 
 // MIDDLEWARE: código que se ejecuta ANTES de las rutas.
 // express.json() convierte el JSON que manda el frontend en un objeto (req.body).
