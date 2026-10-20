@@ -11,6 +11,17 @@
   --borde: #ded9d8;
 }
 
+
+*{
+  margin: 0%;
+}
+
+.b{
+  color: #f5f3f2;
+}
+
+
+
 /* ---------- RESET BÁSICO ----------
    box-sizing: border-box hace que el padding y el borde
    cuenten dentro del ancho del elemento (evita sorpresas con los tamaños). */
@@ -26,7 +37,6 @@
 
 body {
   margin: 0;
-  padding: 2rem 1rem;
   background-image: url(ella.png);
   background-size: cover;
   background-position: center 30%;
@@ -36,6 +46,15 @@ body {
   font-family:Arial, Helvetica, sans-serif;
   line-height: 1.5;
 }
+
+header{
+  background-color: #4d1421;
+  margin: 0%;
+}
+
+
+
+
 
 /* ---------- CONTENEDOR ----------
    max-width limita el ancho en pantallas grandes;
@@ -48,14 +67,15 @@ body {
 h1 {
   margin: 0;
   font-size: 2rem;
-  color: var(--acento);
+  color: #ffffff;
+  text-align: center;
 }
 
 .subtitulo {
   margin: 0.25rem 0 1.5rem;
-  color: var(--texto-suave);
+  color:#ded9d8;
+text-align: center;
 
-  padding: 5px;
   border-radius: 5px;
 }
 
@@ -83,6 +103,7 @@ h1 {
   border-radius: 8px;
   font: inherit; /* usa la misma fuente del resto de la página */
   resize: vertical; /* solo se puede estirar hacia abajo */
+ 
 }
 
 /* :focus se activa cuando el campo está seleccionado.
@@ -127,10 +148,16 @@ button:focus-visible {
 
 .nota {
   padding: 1rem 1.25rem;
-  background: var(--tarjeta);
+ 
   border: 1px solid var(--borde);
   border-left: 4px solid var(--acento);
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1); /* fondo semitransparente */
+  -webkit-backdrop-filter: blur(10px);   /* Safari */
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
 }
 
 .nota p {
