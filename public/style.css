@@ -3,7 +3,7 @@
    Si quieres cambiar un color, lo cambias aquí y se actualiza en todo el sitio. */
 :root {
   --fondo: #f5f3f2;
-  --tarjeta: #ffffff78;
+  --tarjeta: #faf7f8ad;
   --texto: #1d1b1b;
   --texto-suave: #000000;
   --acento: #6b1e2e;
@@ -88,7 +88,7 @@ text-align: center;
   gap: 0.75rem;
   padding: 1.25rem;
   background: var(--tarjeta);
-  border: 1px solid var(--borde);
+  border: 1px solid #4d1421;
   border-radius: 12px;
 }
 

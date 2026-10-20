@@ -1,24 +1,32 @@
-// Traemos la librería que permite usar SQLite desde Node.js.
-const Database = require("better-sqlite3");
+// dotenv lee el archivo .env y mete sus valores en process.env.
+// Así la contraseña de la base de datos NO queda escrita en el código.
+// En Render no existe .env: allí las variables se configuran en el panel.
+require("dotenv").config();
 
-// Abrimos la base de datos. "notas.db" es un archivo normal:
-// si no existe, se crea solo en la carpeta desde donde ejecutas node.
-const db = new Database("notas.db");
+// Pool = grupo de conexiones a PostgreSQL que se reutilizan.
+// Es más eficiente que abrir una conexión nueva en cada petición.
+const { Pool } = require("pg");
 
-// db.exec ejecuta una instrucción SQL directamente.
-// Usamos comillas invertidas (``) para poder escribir el SQL en varias líneas.
-db.exec(`
-  CREATE TABLE IF NOT EXISTS notas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    texto TEXT NOT NULL,
-    fecha TEXT NOT NULL
-  )
-`);
+const pool = new Pool({
+  // La dirección completa de tu base de datos (usuario, clave, servidor...).
+  connectionString: process.env.DATABASE_URL,
+});
 
-// Mensaje solo para comprobar que todo funcionó.
-// Lo quitaremos cuando conectemos este archivo con el servidor.
-console.log("Base de datos lista");
+// Crea la tabla si todavía no existe.
+// Es "async" porque hablar con una base de datos externa tarda:
+// hay que esperar la respuesta con "await".
+async function iniciarBaseDeDatos() {
+  // SERIAL PRIMARY KEY es el equivalente en PostgreSQL de
+  // INTEGER PRIMARY KEY AUTOINCREMENT de SQLite: número que se asigna solo.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS notas (
+      id SERIAL PRIMARY KEY,
+      texto TEXT NOT NULL,
+      fecha TEXT NOT NULL
+    )
+  `);
+  console.log("Base de datos PostgreSQL lista");
+}
 
-// module.exports deja disponible "db" para otros archivos.
-// Más adelante, server.js hará: const db = require("./database");
-module.exports = db;
+// Exportamos las dos cosas que necesita server.js.
+module.exports = { pool, iniciarBaseDeDatos };
