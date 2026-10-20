@@ -1,32 +1,34 @@
-// ---------- 1. CONSTANTES Y ELEMENTOS DEL HTML ----------
-
-// Dirección de nuestra API. Es una ruta relativa (empieza con "/"):
-// como la página la sirve el mismo servidor, el navegador completa
-// solo "http://localhost:3000" delante.
+// ---------- 1. DATOS Y ELEMENTOS ----------
 const URL_API = "/api/notas";
 
+// Las dos personas: la clave ("lele") es lo que se guardará como autor.
+const PERSONAS = {
+  lele: { nombre: "Lele", foto: "img/lele.jpg", inicial: "L" },
+  mayita: { nombre: "Mayita", foto: "img/mayita.jpg", inicial: "M" },
+};
+
 const formulario = document.querySelector("#formulario");
+const campoTitulo = document.querySelector("#titulo");
 const campoTexto = document.querySelector("#texto");
 const lista = document.querySelector("#lista");
 const mensajeVacio = document.querySelector("#vacio");
+const selector = document.querySelector("#selector");
+const autorActual = document.querySelector("#autor-actual");
+
+// Quién eres: se recuerda en el navegador con localStorage.
+let autor = localStorage.getItem("autor");
+if (!PERSONAS[autor]) autor = null;
+
+// Título y autor de esta sesión. TEMPORAL: el servidor todavía solo guarda
+// "texto"; cuando hagamos el backend, esto desaparece.
+const extras = {};
 
 
-// ---------- 2. HABLAR CON EL SERVIDOR (fetch) ----------
-
-// "async" marca una función que espera respuestas lentas (como las del servidor).
-// Dentro de ella podemos usar "await" para decir: "espera a que termine esto
-// antes de pasar a la siguiente línea".
+// ---------- 2. HABLAR CON EL SERVIDOR (igual que antes) ----------
 async function cargarNotas() {
-  // try/catch: si el servidor está apagado, fetch falla y caemos en el catch.
   try {
-    // fetch(url) hace una petición GET por defecto.
-    // Devuelve la respuesta del servidor (todavía sin leer su contenido).
     const respuesta = await fetch(URL_API);
-
-    // respuesta.json() lee el contenido y lo convierte en un array de objetos.
-    // También es lento, por eso lleva await.
     const notas = await respuesta.json();
-
     mostrarNotas(notas);
   } catch (error) {
     console.error("No se pudieron cargar las notas:", error);
@@ -34,25 +36,21 @@ async function cargarNotas() {
   }
 }
 
-async function agregarNota(texto) {
+async function agregarNota(titulo, texto) {
   try {
-    // Para enviar datos, fetch recibe un segundo parámetro con opciones.
     const respuesta = await fetch(URL_API, {
-      method: "POST", // método HTTP: crear
-      // headers = información extra. Aquí avisamos que enviamos JSON.
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      // body = los datos. JSON.stringify convierte el objeto a texto,
-      // porque por internet solo viajan textos.
-      body: JSON.stringify({ texto: texto }),
+      // Enviamos también título y autor; el servidor actual los ignora.
+      body: JSON.stringify({ texto: texto, titulo: titulo, autor: autor }),
     });
-
-    // respuesta.ok es true si el servidor respondió con éxito (códigos 200 a 299).
-    // Si respondió 400 (nota vacía), ok es false.
     if (!respuesta.ok) {
       throw new Error("El servidor rechazó la nota");
     }
-
-    // La base de datos ya la guardó: pedimos la lista actualizada y la dibujamos.
+    // El servidor devuelve la nota creada (con su id): la usamos para
+    // acordarnos del título y el autor mientras la página siga abierta.
+    const creada = await respuesta.json();
+    extras[creada.id] = { titulo: titulo, autor: autor };
     await cargarNotas();
   } catch (error) {
     console.error("No se pudo guardar la nota:", error);
@@ -62,16 +60,10 @@ async function agregarNota(texto) {
 
 async function eliminarNota(id) {
   try {
-    // La URL lleva el id: /api/notas/5. Las comillas invertidas (``)
-    // permiten meter variables dentro del texto con ${...}.
-    const respuesta = await fetch(`${URL_API}/${id}`, {
-      method: "DELETE", // método HTTP: borrar
-    });
-
+    const respuesta = await fetch(`${URL_API}/${id}`, { method: "DELETE" });
     if (!respuesta.ok) {
       throw new Error("El servidor no pudo eliminar la nota");
     }
-
     await cargarNotas();
   } catch (error) {
     console.error("No se pudo eliminar la nota:", error);
@@ -80,69 +72,107 @@ async function eliminarNota(id) {
 }
 
 
-// ---------- 3. MOSTRAR LAS NOTAS EN PANTALLA ----------
+// ---------- 3. DIBUJAR EN PANTALLA ----------
 
-// Ahora recibe las notas como parámetro: ya no las guardamos en una variable
-// del JS, porque la fuente de la verdad es la base de datos del servidor.
+// Ayuda para crear un elemento con clase y texto en una sola línea.
+function crear(etiqueta, clase, texto) {
+  const el = document.createElement(etiqueta);
+  if (clase) el.className = clase;
+  if (texto) el.textContent = texto;
+  return el;
+}
+
+// Círculo con la foto de la persona; si la foto no existe, queda la inicial.
+function crearAvatar(clave) {
+  const persona = PERSONAS[clave];
+  const span = crear("span", "avatar");
+  span.dataset.i = persona ? persona.inicial : "?";
+  if (persona) {
+    const img = document.createElement("img");
+    img.src = persona.foto;
+    img.alt = "";
+    img.onerror = function () { img.remove(); };
+    span.append(img);
+  }
+  return span;
+}
+
 function mostrarNotas(notas) {
   lista.innerHTML = "";
-
-  // Si no hay notas mostramos el mensaje; si hay, lo ocultamos.
   mensajeVacio.hidden = notas.length > 0;
 
   notas.forEach(function (nota) {
-    const item = document.createElement("li");
-    item.className = "nota";
+    // Título y autor: los de esta sesión o, si algún día el servidor los envía, los suyos.
+    const datos = extras[nota.id] || {};
+    const titulo = datos.titulo || nota.titulo;
+    const clave = datos.autor || nota.autor;
+    const persona = PERSONAS[clave];
 
-    const parrafo = document.createElement("p");
-    // textContent inserta el texto "tal cual" (más seguro que innerHTML).
-    parrafo.textContent = nota.texto;
+    const cabecera = crear("div", "nota-cabecera");
+    cabecera.append(crear("strong", "", persona ? persona.nombre : "Sin autor"), crear("time", "", nota.fecha));
 
-    const pie = document.createElement("div");
-    pie.className = "nota-pie";
+    const cuerpo = crear("div", "nota-cuerpo");
+    cuerpo.append(cabecera);
+    if (titulo) cuerpo.append(crear("h3", "", titulo));
+    cuerpo.append(crear("p", "", nota.texto));
 
-    const fecha = document.createElement("time");
-    fecha.textContent = nota.fecha;
+    const boton = crear("button", "boton-eliminar", "Eliminar");
+    boton.type = "button";
+    boton.addEventListener("click", function () { eliminarNota(nota.id); });
+    cuerpo.append(boton);
 
-    const botonEliminar = document.createElement("button");
-    botonEliminar.type = "button";
-    botonEliminar.className = "boton-eliminar";
-    botonEliminar.textContent = "Eliminar";
-
-    // nota.id es el id que le asignó la base de datos (1, 2, 3...).
-    botonEliminar.addEventListener("click", function () {
-      eliminarNota(nota.id);
-    });
-
-    pie.append(fecha, botonEliminar);
-    item.append(parrafo, pie);
+    const item = crear("li", "nota");
+    item.append(crearAvatar(clave), cuerpo);
     lista.append(item);
   });
 }
 
 
-// ---------- 4. EVENTOS ----------
+// ---------- 4. QUIÉN ERES (ventana emergente) ----------
+function elegirAutor(clave) {
+  autor = clave;
+  localStorage.setItem("autor", clave);
+  autorActual.textContent = PERSONAS[clave].nombre;
+  selector.close();
+}
 
-// La función del evento también es async para poder usar await adentro.
-formulario.addEventListener("submit", async function (evento) {
-  // Cancela la recarga automática del formulario.
-  evento.preventDefault();
+selector.querySelectorAll(".opcion").forEach(function (boton) {
+  boton.addEventListener("click", function () { elegirAutor(boton.dataset.autor); });
+});
 
-  const texto = campoTexto.value.trim();
+// Si todavía no eligió a nadie, la ventana no se puede cerrar con Esc.
+selector.addEventListener("cancel", function (evento) {
+  if (!autor) evento.preventDefault();
+});
 
-  if (texto === "") {
-    return;
-  }
-
-  // Esperamos a que el servidor guarde antes de limpiar el campo.
-  await agregarNota(texto);
-
-  formulario.reset();
-  campoTexto.focus();
+document.querySelector("#cambiar").addEventListener("click", function () {
+  selector.showModal();
 });
 
 
-// ---------- 5. INICIO ----------
+// ---------- 5. FORMULARIO ----------
+formulario.addEventListener("submit", async function (evento) {
+  evento.preventDefault();
 
-// Al abrir la página pedimos al servidor las notas que ya estaban guardadas.
+  const titulo = campoTitulo.value.trim();
+  const texto = campoTexto.value.trim();
+  if (titulo === "" || texto === "") return;
+
+  if (!autor) {
+    selector.showModal();
+    return;
+  }
+
+  await agregarNota(titulo, texto);
+  formulario.reset();
+  campoTitulo.focus();
+});
+
+
+// ---------- 6. INICIO ----------
+if (autor) {
+  autorActual.textContent = PERSONAS[autor].nombre;
+} else {
+  selector.showModal();
+}
 cargarNotas();

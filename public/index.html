@@ -1,53 +1,58 @@
 <!DOCTYPE html>
-<!-- Le dice al navegador que este archivo es HTML5 -->
 <html lang="es">
   <head>
-    <!-- Permite usar tildes y la ñ correctamente -->
     <meta charset="UTF-8" />
-
-    <!-- Hace que la página se vea bien en celulares -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Mis notas</title>
-
-    <!-- Conecta el archivo de estilos (CSS) -->
+    <title>Nuestros recuerdos</title>
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
     <header>
-      <h1><b>Mis notas</b></h1>
-      <b><p class="subtitulo">Lo que escribas aquí se guarda en la base de datos del servidor.</p></b>
+      <h1>Nuestros recuerdos</h1>
+      <p class="subtitulo">Lo que escribas aquí se guarda en la base de datos del servidor.</p>
     </header>
+
     <main class="contenedor">
-      
-      <!-- FORMULARIO: aquí el usuario escribe la nota -->
-      <!-- El JS escucha el evento "submit" de este formulario por su id -->
+      <!-- Imagen de portada: pon nosotros.png en la carpeta public -->
+      <img class="portada" src="nosotros.png" alt="Lele y Mayita" />
+
       <form id="formulario" class="formulario">
-        <label for="texto">Nueva nota</label>
+        <!-- Quién publica: lo llena el JS según la ventana emergente -->
+        <p class="publicando">
+          Publicando como <strong id="autor-actual"></strong>
+          <button type="button" id="cambiar" class="boton-texto">Cambiar</button>
+        </p>
 
-        <!-- textarea = campo de texto de varias líneas -->
-        <!-- required = el navegador no deja enviar si está vacío -->
-        <textarea
-          id="texto"
-          name="texto"
-          rows="3"
-          placeholder="Escribe algo que no quieras olvidar"
-          required
-        ></textarea>
+        <label for="titulo">Título</label>
+        <input id="titulo" name="titulo" type="text" maxlength="80" placeholder="Ponle nombre a este recuerdo" required />
 
-        <button type="submit">Guardar nota</button>
+        <label for="texto">Recuerdo</label>
+        <textarea id="texto" name="texto" rows="4" placeholder="Escribe algo que no quieras olvidar" required></textarea>
+
+        <button type="submit">Guardar recuerdo</button>
       </form>
 
-      <!-- LISTA: el JS va a crear aquí un <li> por cada nota guardada -->
       <ul id="lista" class="lista"></ul>
-
-      <!-- Mensaje que se muestra solo cuando no hay notas -->
-      <!-- hidden = oculto; el JS lo muestra o lo oculta según haga falta -->
-      <p id="vacio" class="vacio" hidden>Todavía no hay notas. Escribe la primera arriba.</p>
+      <p id="vacio" class="vacio" hidden>Todavía no hay recuerdos. Escribe el primero arriba.</p>
     </main>
 
-    <!-- El script va al final para que el HTML ya exista cuando el JS lo busque -->
+    <!-- Ventana emergente: <dialog> es una etiqueta nativa de HTML -->
+    <dialog id="selector" class="selector">
+      <h2>¿Quién eres?</h2>
+      <div class="opciones">
+        <!-- Fotos: pon lele.jpg y mayita.jpg en public/img/. Si no existen, se ve la inicial -->
+        <button type="button" class="opcion" data-autor="lele">
+          <span class="avatar" data-i="L"><img src="img/lele.jpg" alt="" onerror="this.remove()" /></span>
+          Lele
+        </button>
+        <button type="button" class="opcion" data-autor="mayita">
+          <span class="avatar" data-i="M"><img src="img/mayita.jpg" alt="" onerror="this.remove()" /></span>
+          Mayita
+        </button>
+      </div>
+    </dialog>
+
     <script src="script.js"></script>
   </body>
 </html>
