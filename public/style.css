@@ -1,0 +1,168 @@
+/* ---------- VARIABLES ----------
+   Se definen una sola vez en :root y se reutilizan con var(--nombre).
+   Si quieres cambiar un color, lo cambias aquí y se actualiza en todo el sitio. */
+:root {
+  --fondo: #f5f3f2;
+  --tarjeta: #ffffff;
+  --texto: #1d1b1b;
+  --texto-suave: #6b6666;
+  --acento: #6b1e2e;
+  --acento-oscuro: #4d1421;
+  --borde: #ded9d8;
+}
+
+/* ---------- RESET BÁSICO ----------
+   box-sizing: border-box hace que el padding y el borde
+   cuenten dentro del ancho del elemento (evita sorpresas con los tamaños). */
+* {
+  box-sizing: border-box;
+}
+
+/* Asegura que el atributo hidden siempre oculte el elemento,
+   aunque otra regla CSS le haya puesto "display". */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1rem;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+/* ---------- CONTENEDOR ----------
+   max-width limita el ancho en pantallas grandes;
+   margin: 0 auto lo centra horizontalmente. */
+.contenedor {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--acento);
+}
+
+.subtitulo {
+  margin: 0.25rem 0 1.5rem;
+  color: var(--texto-suave);
+}
+
+/* ---------- FORMULARIO ----------
+   display: flex + flex-direction: column apila los elementos
+   uno debajo del otro; gap pone espacio entre ellos. */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+}
+
+.formulario label {
+  font-weight: 600;
+}
+
+.formulario textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font: inherit; /* usa la misma fuente del resto de la página */
+  resize: vertical; /* solo se puede estirar hacia abajo */
+}
+
+/* :focus se activa cuando el campo está seleccionado.
+   Es importante para quien navega con teclado. */
+.formulario textarea:focus {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+}
+
+/* ---------- BOTONES ---------- */
+button {
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--acento);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* :hover se activa al pasar el mouse por encima */
+button:hover {
+  background: var(--acento-oscuro);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ---------- LISTA DE NOTAS ----------
+   list-style: none quita las viñetas del <ul>. */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nota {
+  padding: 1rem 1.25rem;
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--acento);
+  border-radius: 8px;
+}
+
+.nota p {
+  margin: 0 0 0.5rem;
+  /* pre-wrap respeta los saltos de línea que el usuario escribió */
+  white-space: pre-wrap;
+  /* evita que una palabra muy larga rompa el diseño */
+  overflow-wrap: anywhere;
+}
+
+/* Fila inferior de la nota: fecha a la izquierda, botón a la derecha */
+.nota-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nota time {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+/* Botón secundario: solo borde, sin relleno */
+.boton-eliminar {
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  color: var(--acento);
+  border: 1px solid var(--acento);
+  font-size: 0.85rem;
+}
+
+.boton-eliminar:hover {
+  background: var(--acento);
+  color: #ffffff;
+}
+
+.vacio {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: var(--texto-suave);
+}

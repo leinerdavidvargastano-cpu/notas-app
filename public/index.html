@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!-- Le dice al navegador que este archivo es HTML5 -->
+<html lang="es">
+  <head>
+    <!-- Permite usar tildes y la ñ correctamente -->
+    <meta charset="UTF-8" />
+
+    <!-- Hace que la página se vea bien en celulares -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Mis notas</title>
+
+    <!-- Conecta el archivo de estilos (CSS) -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <main class="contenedor">
+      <h1>Mis notas</h1>
+      <p class="subtitulo">Lo que escribas aquí se guarda en la base de datos del servidor.</p>
+
+      <!-- FORMULARIO: aquí el usuario escribe la nota -->
+      <!-- El JS escucha el evento "submit" de este formulario por su id -->
+      <form id="formulario" class="formulario">
+        <label for="texto">Nueva nota</label>
+
+        <!-- textarea = campo de texto de varias líneas -->
+        <!-- required = el navegador no deja enviar si está vacío -->
+        <textarea
+          id="texto"
+          name="texto"
+          rows="3"
+          placeholder="Escribe algo que no quieras olvidar"
+          required
+        ></textarea>
+
+        <button type="submit">Guardar nota</button>
+      </form>
+
+      <!-- LISTA: el JS va a crear aquí un <li> por cada nota guardada -->
+      <ul id="lista" class="lista"></ul>
+
+      <!-- Mensaje que se muestra solo cuando no hay notas -->
+      <!-- hidden = oculto; el JS lo muestra o lo oculta según haga falta -->
+      <p id="vacio" class="vacio" hidden>Todavía no hay notas. Escribe la primera arriba.</p>
+    </main>
+
+    <!-- El script va al final para que el HTML ya exista cuando el JS lo busque -->
+    <script src="script.js"></script>
+  </body>
+</html>
