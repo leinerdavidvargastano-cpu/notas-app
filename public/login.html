@@ -2,49 +2,54 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <!-- Hace que la página se vea bien en el celular -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Entrar</title>
+
+  <!-- Primero tu CSS de siempre (colores, fondo, campos, botones)... -->
+  <link rel="stylesheet" href="style.css">
+  <!-- ...y después el de esta pantalla. Si dos reglas chocan, gana la que va después -->
+  <link rel="stylesheet" href="login.css">
 </head>
 <body>
 
-  <h1>Nuestros recuerdos</h1>
+  <!-- El mismo encabezado vinotinto de tu página principal -->
+  <header>
+    <h1>Nuestros recuerdos</h1>
+    <p class="subtitulo">Un lugar solo para dos</p>
+  </header>
 
-  <!-- FORMULARIO DE INICIAR SESIÓN -->
-  <form id="form-login">
-    <h2>Iniciar sesión</h2>
+  <main class="contenedor contenedor-login">
 
-    <!-- type="email": el navegador revisa que tenga forma de correo -->
-    <input type="email" id="login-email" placeholder="Correo" required>
+    <!-- FORMULARIO DE INICIAR SESIÓN -->
+    <!-- class="formulario": reutiliza la tarjeta y los campos de style.css -->
+    <form id="form-login" class="formulario">
+      <h2>Iniciar sesión</h2>
 
-    <!-- type="password": los caracteres se ven como puntos -->
-    <input type="password" id="login-password" placeholder="Contraseña" required>
+      <input type="email" id="login-email" placeholder="Correo" required>
+      <input type="password" id="login-password" placeholder="Contraseña" required>
 
-    <button type="submit">Entrar</button>
+      <button type="submit">Entrar</button>
 
-    <!-- Aquí mostraremos los errores, por ejemplo "Correo o contraseña incorrectos" -->
-    <p id="login-error"></p>
+      <p id="login-error" class="mensaje"></p>
 
-    <p>¿Aún no tienes cuenta? <a href="#" id="ir-registro">Crear cuenta</a></p>
-  </form>
+      <p class="cambio">¿Aún no tienes cuenta? <a href="#" id="ir-registro">Crear cuenta</a></p>
+    </form>
 
-  <!-- FORMULARIO DE REGISTRO (empieza oculto) -->
-  <!-- hidden: el navegador lo esconde hasta que lo mostremos con JavaScript -->
-  <form id="form-registro" hidden>
-    <h2>Crear cuenta</h2>
+    <!-- FORMULARIO DE REGISTRO (empieza oculto) -->
+    <form id="form-registro" class="formulario" hidden>
+      <h2>Crear cuenta</h2>
 
-    <input type="email" id="registro-email" placeholder="Correo" required>
+      <input type="email" id="registro-email" placeholder="Correo" required>
+      <input type="password" id="registro-password" placeholder="Contraseña (mínimo 8 caracteres)" minlength="8" required>
 
-    <!-- minlength="8": igual que la regla que pusimos en el servidor -->
-    <input type="password" id="registro-password" placeholder="Contraseña (mínimo 8 caracteres)" minlength="8" required>
+      <button type="submit">Crear cuenta</button>
 
-    <button type="submit">Crear cuenta</button>
+      <p id="registro-error" class="mensaje"></p>
 
-    <p id="registro-error"></p>
+      <p class="cambio">¿Ya tienes cuenta? <a href="#" id="ir-login">Iniciar sesión</a></p>
+    </form>
 
-    <p>¿Ya tienes cuenta? <a href="#" id="ir-login">Iniciar sesión</a></p>
-  </form>
-
+  </main>
 
   <script src="login.js"></script>
 </body>

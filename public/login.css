@@ -1,0 +1,52 @@
+/* ---------- CONTENEDOR DEL LOGIN ---------- */
+/* .contenedor (de style.css) ya lo centra; aquí lo hacemos más angosto,
+   porque un login se ve mejor como una tarjeta pequeña */
+.contenedor-login {
+  max-width: 400px;
+  margin-top: 3rem;
+}
+
+/* ---------- TÍTULO DE CADA FORMULARIO ---------- */
+/* La misma letra cursiva Georgia que usas en los títulos de tus notas */
+.formulario h2 {
+  font: italic 1.6rem Georgia, serif;
+  color: var(--vino);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+/* ---------- BOTÓN ---------- */
+/* El color y el hover ya vienen de style.css; solo lo separamos un poco de los campos */
+.formulario button[type="submit"] {
+  margin-top: 0.4rem;
+}
+
+/* ---------- MENSAJES DE ERROR O AVISO ---------- */
+.mensaje {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--vino-claro);
+}
+
+/* :empty = párrafo sin nada escrito. Lo escondemos para que no deje
+   un hueco vacío cuando no hay ningún mensaje */
+.mensaje:empty {
+  display: none;
+}
+
+/* ---------- LINK PARA CAMBIAR ENTRE LOGIN Y REGISTRO ---------- */
+.cambio {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--suave);
+}
+
+.cambio a {
+  color: var(--vino-claro);
+  font-weight: 600;
+}
+
+.cambio a:hover {
+  color: var(--vino);
+}
