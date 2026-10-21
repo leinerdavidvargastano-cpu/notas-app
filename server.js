@@ -41,10 +41,23 @@ app.use(session({
 
 app.use(express.static("public"));
 
+// ---------- PORTERO: EXIGE SESIÓN ----------
+// Un middleware recibe req, res y next.
+// next() significa "todo bien, sigue con la ruta".
+function requiereSesion(req, res, next) {
+  // Si la sesión no tiene usuarioId, esta persona no ha iniciado sesión
+  if (!req.session.usuarioId) {
+    return res.status(401).json({ error: "No has iniciado sesión" });
+  }
+  // Sí tiene sesión: dejamos pasar
+  next();
+}
+
+
 
 // ---------- LEER TODAS LAS NOTAS ----------
 // GET /api/notas
-app.get("/api/notas", async function (req, res) {
+app.get("/api/notas", requiereSesion, async function (req, res) {
   // try/catch: si la base de datos falla, respondemos con error 500
   // ("error del servidor") en vez de dejar la petición colgada.
   try {
@@ -61,7 +74,7 @@ app.get("/api/notas", async function (req, res) {
 
 // ---------- CREAR UNA NOTA ----------
 // POST /api/notas
-app.post("/api/notas", async function (req, res) {
+app.post("/api/notas", requiereSesion, async function (req, res) {
   const texto = (req.body.texto || "").trim();
   const titulo = (req.body.titulo || "").trim();
   const autor = req.body.autor;
@@ -103,7 +116,7 @@ app.post("/api/notas", async function (req, res) {
 
 // ---------- ELIMINAR UNA NOTA ----------
 // DELETE /api/notas/5  → req.params.id vale "5"
-app.delete("/api/notas/:id", async function (req, res) {
+app.delete("/api/notas/:id", requiereSesion, async function (req, res) {
   try {
     await pool.query("DELETE FROM notas WHERE id = $1", [req.params.id]);
     res.json({ ok: true });
