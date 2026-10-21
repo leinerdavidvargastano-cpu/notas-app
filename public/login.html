@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Hace que la página se vea bien en el celular -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar</title>
+</head>
+<body>
+
+  <h1>Nuestros recuerdos</h1>
+
+  <!-- FORMULARIO DE INICIAR SESIÓN -->
+  <form id="form-login">
+    <h2>Iniciar sesión</h2>
+
+    <!-- type="email": el navegador revisa que tenga forma de correo -->
+    <input type="email" id="login-email" placeholder="Correo" required>
+
+    <!-- type="password": los caracteres se ven como puntos -->
+    <input type="password" id="login-password" placeholder="Contraseña" required>
+
+    <button type="submit">Entrar</button>
+
+    <!-- Aquí mostraremos los errores, por ejemplo "Correo o contraseña incorrectos" -->
+    <p id="login-error"></p>
+
+    <p>¿Aún no tienes cuenta? <a href="#" id="ir-registro">Crear cuenta</a></p>
+  </form>
+
+  <!-- FORMULARIO DE REGISTRO (empieza oculto) -->
+  <!-- hidden: el navegador lo esconde hasta que lo mostremos con JavaScript -->
+  <form id="form-registro" hidden>
+    <h2>Crear cuenta</h2>
+
+    <input type="email" id="registro-email" placeholder="Correo" required>
+
+    <!-- minlength="8": igual que la regla que pusimos en el servidor -->
+    <input type="password" id="registro-password" placeholder="Contraseña (mínimo 8 caracteres)" minlength="8" required>
+
+    <button type="submit">Crear cuenta</button>
+
+    <p id="registro-error"></p>
+
+    <p>¿Ya tienes cuenta? <a href="#" id="ir-login">Iniciar sesión</a></p>
+  </form>
+
+
+  <script src="login.js"></script>
+</body>
+</html>
