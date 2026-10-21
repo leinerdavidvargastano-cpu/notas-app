@@ -5,10 +5,40 @@ const { pool, iniciarBaseDeDatos } = require("./database");
 // bcryptjs: la herramienta que convierte una contraseña en un texto cifrado
 const bcrypt = require("bcryptjs");
 
+// express-session: crea y lee las sesiones y sus cookies
+const session = require("express-session");
+// connect-pg-simple: guarda las sesiones en PostgreSQL (tu base de Neon)
+const PgSession = require("connect-pg-simple")(session);
+
 const app = express();
 const PUERTO = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Render pone un intermediario delante de tu servidor; esto le dice a Express
+// que confíe en él. Sin esto, la cookie segura no funcionaría al publicarla.
+app.set("trust proxy", 1);
+
+app.use(session({
+  // Dónde se guardan las sesiones: en tu base de datos, no en la memoria.
+  // createTableIfMissing crea la tabla "session" sola si no existe.
+  store: new PgSession({ pool: pool, createTableIfMissing: true }),
+
+  // Clave secreta con la que se firma la cookie para que nadie pueda falsificarla.
+  // En Render pondremos una real; esta solo sirve en tu computador.
+  secret: process.env.SESSION_SECRET || "clave-solo-para-desarrollo",
+
+  resave: false,            // no vuelve a guardar la sesión si no cambió
+  saveUninitialized: false, // no crea sesión para quien no ha iniciado sesión
+
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 30, // dura 30 días (en milisegundos)
+    httpOnly: true,                   // el JavaScript de la página no puede leerla
+    sameSite: "lax",                  // protege contra envíos desde otras páginas
+    secure: process.env.NODE_ENV === "production" // solo por HTTPS al publicar
+  }
+}));
+
 app.use(express.static("public"));
 
 
@@ -83,6 +113,8 @@ app.delete("/api/notas/:id", async function (req, res) {
   }
 });
 
+
+
 // ---------- REGISTRAR UN USUARIO ----------
 // POST /api/registro
 
@@ -127,6 +159,103 @@ app.post("/api/registro", async function (req, res) {
     console.error("Error al registrar:", error);
     res.status(500).json({ error: "No se pudo registrar el usuario" });
   }
+});
+
+
+// ---------- INICIAR SESIÓN ----------
+// POST /api/login
+app.post("/api/login", async function (req, res) {
+  const email = (req.body.email || "").trim().toLowerCase();
+  const password = req.body.password || "";
+
+  if (email === "" || password === "") {
+    return res.status(400).json({ error: "El correo y la contraseña son obligatorios" });
+  }
+
+  try {
+    // 1. Buscamos al usuario por su correo. Esta vez sí pedimos el hash,
+    // porque lo necesitamos para comparar (solo se usa aquí dentro,
+    // nunca se manda al navegador).
+    const resultado = await pool.query(
+      "SELECT id, email, password_hash FROM usuarios WHERE email = $1",
+      [email]
+    );
+
+    // Si no hay ninguna fila, el correo no existe y usuario queda undefined.
+    const usuario = resultado.rows[0];
+
+    // 2. Comparamos la contraseña escrita con el hash guardado.
+    // bcrypt.compare cifra lo que escribió la persona y verifica si coincide.
+    // Si el usuario no existe, directamente decimos que no coincide.
+    const coincide = usuario
+      ? await bcrypt.compare(password, usuario.password_hash)
+      : false;
+
+    // 3. Si no coincide, respondemos 401 ("no autorizado").
+    // Usamos el MISMO mensaje para correo malo y contraseña mala, así
+    // nadie puede descubrir qué correos están registrados.
+    if (!coincide) {
+      return res.status(401).json({ error: "Correo o contraseña incorrectos" });
+    }
+
+    // 4. Todo bien: guardamos el id del usuario dentro de la sesión.
+    // express-session crea la fila en la tabla "session" y le manda
+    // la cookie al navegador automáticamente.
+    req.session.usuarioId = usuario.id;
+
+    res.json({ ok: true, email: usuario.email });
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    res.status(500).json({ error: "No se pudo iniciar sesión" });
+  }
+});
+
+
+// ---------- QUIÉN SOY ----------
+// GET /api/yo
+app.get("/api/yo", async function (req, res) {
+  // Si la sesión no tiene usuarioId, esta persona no ha iniciado sesión.
+  // 401 significa "no autorizado".
+  if (!req.session.usuarioId) {
+    return res.status(401).json({ error: "No has iniciado sesión" });
+  }
+
+  try {
+    // Buscamos al usuario por el id que guardamos en la sesión al hacer login.
+    // No pedimos el hash: solo el id y el correo.
+    const resultado = await pool.query(
+      "SELECT id, email FROM usuarios WHERE id = $1",
+      [req.session.usuarioId]
+    );
+
+    // Si el usuario ya no existe (por ejemplo, lo borraste en Neon),
+    // la sesión quedó huérfana y la tratamos como no iniciada.
+    if (resultado.rows.length === 0) {
+      return res.status(401).json({ error: "No has iniciado sesión" });
+    }
+
+    res.json(resultado.rows[0]);
+  } catch (error) {
+    console.error("Error al consultar la sesión:", error);
+    res.status(500).json({ error: "No se pudo consultar la sesión" });
+  }
+});
+
+
+// ---------- CERRAR SESIÓN ----------
+// POST /api/logout
+app.post("/api/logout", function (req, res) {
+  // destroy borra la fila de la tabla "session" en Neon.
+  req.session.destroy(function (error) {
+    if (error) {
+      console.error("Error al cerrar sesión:", error);
+      return res.status(500).json({ error: "No se pudo cerrar la sesión" });
+    }
+    // También le decimos al navegador que borre la cookie.
+    // "connect.sid" es el nombre que express-session le da por defecto.
+    res.clearCookie("connect.sid");
+    res.json({ ok: true });
+  });
 });
 
 
