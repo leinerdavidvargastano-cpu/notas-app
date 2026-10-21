@@ -1,3 +1,6 @@
+
+
+
 /* ---------- VARIABLES: cambia un color aquí y cambia en toda la página ---------- */
 :root {
   --vino: #4d1421;
@@ -137,3 +140,17 @@ button:hover { background: var(--vino); }
 .opcion { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0.75rem; background: none; color: var(--vino); border: 2px solid transparent; border-radius: 14px; }
 .opcion:hover { background: var(--rosa); border-color: var(--vino-claro); }
 .opcion .avatar { --t: 96px; font-size: 2rem; }
+
+
+/* ---------- BOTÓN CERRAR SESIÓN ---------- */
+/* Transparente con borde claro, para que se vea bien sobre el fondo vinotinto del encabezado */
+.boton-salir {
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.9rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid var(--borde);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.boton-salir:hover { background: var(--rosa); color: var(--vino); }

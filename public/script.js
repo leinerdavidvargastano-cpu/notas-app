@@ -1,3 +1,16 @@
+// ---------- GUARDIA: SOLO ENTRA QUIEN TIENE SESIÓN ----------
+// Le preguntamos al servidor quién somos. La cookie viaja sola en la petición.
+fetch("/api/yo").then(function (respuesta) {
+  // respuesta.ok es false cuando el servidor contestó 401 (sin sesión)
+  if (!respuesta.ok) {
+    // window.location.href cambia la dirección del navegador
+    window.location.href = "/login.html";
+  }
+});
+
+
+
+
 // ---------- 1. DATOS Y ELEMENTOS ----------
 const URL_API = "/api/notas";
 
@@ -68,6 +81,25 @@ async function eliminarNota(id) {
   } catch (error) {
     console.error("No se pudo eliminar la nota:", error);
     alert("No se pudo eliminar la nota.");
+  }
+}
+
+async function cargarNotas() {
+  try {
+    const respuesta = await fetch(URL_API);
+
+    // NUEVO: 401 significa que no hay sesión (o ya venció).
+    // Mandamos al login y paramos aquí, sin mostrar ningún error.
+    if (respuesta.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
+
+    const notas = await respuesta.json();
+    mostrarNotas(notas);
+  } catch (error) {
+    console.error("No se pudieron cargar las notas:", error);
+    alert("No se pudo conectar con el servidor. ¿Está encendido?");
   }
 }
 
@@ -176,3 +208,15 @@ if (autor) {
   selector.showModal();
 }
 cargarNotas();
+
+// ---------- 7. CERRAR SESIÓN ----------
+document.querySelector("#cerrar-sesion").addEventListener("click", async function () {
+  try {
+    // Le avisamos al servidor: borra la sesión en Neon y la cookie del navegador
+    await fetch("/api/logout", { method: "POST" });
+  } catch (error) {
+    console.error("No se pudo cerrar la sesión:", error);
+  }
+  // Pase lo que pase, mandamos a la pantalla de entrada
+  window.location.href = "/login.html";
+});
