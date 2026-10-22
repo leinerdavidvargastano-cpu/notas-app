@@ -162,7 +162,7 @@ button:hover { background: var(--vino); }
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.3rem;
 }
 
 .reaccion {
@@ -255,3 +255,16 @@ button:hover { background: var(--vino); }
   border: 1px solid var(--vino-claro);
 }
 .boton-cancelar:hover { background: var(--rosa); color: var(--vino); }
+
+/* ---------- TEXTO DE LAS REACCIONES QUE PUSE ---------- */
+.reacciones-bloque { margin-bottom: 0.6rem; }
+
+.reaccion-texto {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--vino-claro);
+}
+
+/* Si no hay ninguna reacción, el párrafo está vacío y lo escondemos
+   para que no deje un hueco */
+.reaccion-texto:empty { display: none; }

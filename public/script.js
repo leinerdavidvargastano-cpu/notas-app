@@ -237,7 +237,23 @@ function crearReacciones(nota) {
     barra.append(boton);
   });
 
-  return barra;
+    // NUEVO: línea de texto con el nombre de las reacciones que puse YO.
+  // filter se queda con las reacciones que están en nota.mias,
+  // y map saca solo el nombre de cada una ("Me encanta", "Ramón"...).
+  const nombres = REACCIONES
+    .filter(function (reaccion) { return (nota.mias || []).includes(reaccion.clave); })
+    .map(function (reaccion) { return reaccion.nombre; });
+
+  const texto = crear("p", "reaccion-texto");
+  if (nombres.length > 0) {
+    // join une los nombres con " · " entre ellos
+    texto.textContent = "Reaccionaste: " + nombres.join(" · ");
+  }
+
+  // Devolvemos un bloque que contiene los botones y, debajo, el texto
+  const bloque = crear("div", "reacciones-bloque");
+  bloque.append(barra, texto);
+  return bloque;
 }
 
 
