@@ -20,6 +20,19 @@ const PERSONAS = {
   mayita: { nombre: "Mayita", foto: "img/mayita.jpg", inicial: "M" },
 };
 
+
+// Las reacciones: la "clave" es lo que se guarda en la base de datos
+// (la misma lista que REACCIONES_VALIDAS del servidor).
+const REACCIONES = [
+  { clave: "encanta", emoji: "❤️", nombre: "Me encanta" },
+  { clave: "gusta", emoji: "👍", nombre: "Me gusta" },
+  { clave: "asombra", emoji: "😮", nombre: "Me asombra" },
+  { clave: "divierte", emoji: "😂", nombre: "Me divierte" },
+  { clave: "amen", emoji: "🙏", nombre: "Amén" },
+  { clave: "ramon", emoji: "🍆", nombre: "Ramón" },
+];
+
+
 const formulario = document.querySelector("#formulario");
 const campoTitulo = document.querySelector("#titulo");
 const campoTexto = document.querySelector("#texto");
@@ -84,6 +97,35 @@ async function eliminarNota(id) {
   }
 }
 
+
+async function reaccionar(notaId, tipo) {
+  try {
+    // La ruta que ya probamos desde la consola: pone o quita la reacción
+    const respuesta = await fetch(`${URL_API}/${notaId}/reacciones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipo: tipo }),
+    });
+
+    // Si la sesión venció, mandamos al login
+    if (respuesta.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
+    if (!respuesta.ok) {
+      throw new Error("El servidor rechazó la reacción");
+    }
+
+    // Volvemos a pedir las notas para que se actualicen los contadores
+    await cargarNotas();
+  } catch (error) {
+    console.error("No se pudo guardar la reacción:", error);
+    alert("No se pudo guardar la reacción.");
+  }
+}
+
+
+
 async function cargarNotas() {
   try {
     const respuesta = await fetch(URL_API);
@@ -129,6 +171,42 @@ function crearAvatar(clave) {
   return span;
 }
 
+
+// Crea la fila de botones de reacción de UNA nota
+function crearReacciones(nota) {
+  const barra = crear("div", "reacciones");
+
+  // Recorremos la lista y creamos un botón por cada reacción
+  REACCIONES.forEach(function (reaccion) {
+    const boton = crear("button", "reaccion");
+    boton.type = "button";
+    // title: el texto que aparece al dejar el mouse encima
+    boton.title = reaccion.nombre;
+
+    // ¿La puse yo? nota.mias es la lista que manda el servidor
+    if ((nota.mias || []).includes(reaccion.clave)) {
+      boton.classList.add("activa");
+    }
+
+    boton.append(crear("span", "", reaccion.emoji));
+
+    // Contador: solo se muestra si hay al menos una reacción de ese tipo
+    const total = (nota.reacciones || {})[reaccion.clave] || 0;
+    if (total > 0) {
+      boton.append(crear("span", "reaccion-numero", String(total)));
+    }
+
+    boton.addEventListener("click", function () {
+      reaccionar(nota.id, reaccion.clave);
+    });
+
+    barra.append(boton);
+  });
+
+  return barra;
+}
+
+
 function mostrarNotas(notas) {
   lista.innerHTML = "";
   mensajeVacio.hidden = notas.length > 0;
@@ -147,6 +225,7 @@ function mostrarNotas(notas) {
     cuerpo.append(cabecera);
     if (titulo) cuerpo.append(crear("h3", "", titulo));
     cuerpo.append(crear("p", "", nota.texto));
+    cuerpo.append(crearReacciones(nota));   // ← NUEVA
 
     const boton = crear("button", "boton-eliminar", "Eliminar");
     boton.type = "button";

@@ -154,3 +154,43 @@ button:hover { background: var(--vino); }
   font-weight: 400;
 }
 .boton-salir:hover { background: var(--rosa); color: var(--vino); }
+
+
+/* ---------- REACCIONES ---------- */
+/* La fila que contiene los 6 botones; flex-wrap los baja de línea si no caben */
+.reacciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Cada botón de reacción: forma de "píldora" con borde redondeado */
+.reaccion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 250, 243, 0.75);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 400;
+}
+.reaccion:hover { background: var(--rosa); }
+
+/* El número del contador, más pequeño que el emoji */
+.reaccion-numero {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* LA REACCIÓN QUE PUSISTE TÚ: fondo vinotinto y texto blanco.
+   Va después del :hover para que gane cuando se cumplen las dos cosas. */
+.reaccion.activa {
+  background: var(--vino-claro);
+  border-color: var(--vino);
+  color: #fff;
+}
+.reaccion.activa:hover { background: var(--vino); }
