@@ -58,13 +58,47 @@ function requiereSesion(req, res, next) {
 // ---------- LEER TODAS LAS NOTAS ----------
 // GET /api/notas
 app.get("/api/notas", requiereSesion, async function (req, res) {
-  // try/catch: si la base de datos falla, respondemos con error 500
-  // ("error del servidor") en vez de dejar la petición colgada.
   try {
-    // pool.query ejecuta SQL y devuelve un objeto de resultado.
-    // Las filas están en resultado.rows (un array de objetos).
+    // 1. Las notas, igual que antes
     const resultado = await pool.query("SELECT * FROM notas ORDER BY id DESC");
-    res.json(resultado.rows);
+    const notas = resultado.rows;
+
+    // 2. Cuántas reacciones de cada tipo tiene cada nota.
+    // GROUP BY agrupa las filas iguales y COUNT(*) las cuenta.
+    const conteos = await pool.query(
+      "SELECT nota_id, tipo, COUNT(*) AS total FROM reacciones GROUP BY nota_id, tipo"
+    );
+
+    // 3. Solo las reacciones que puse YO (el usuario de la sesión)
+    const mias = await pool.query(
+      "SELECT nota_id, tipo FROM reacciones WHERE usuario_id = $1",
+      [req.session.usuarioId]
+    );
+
+    // 4. Armamos un "índice": un objeto donde la clave es el id de la nota
+    // y el valor es la nota. Así la encontramos al instante en vez de
+    // recorrer toda la lista cada vez.
+    const notaPorId = {};
+    notas.forEach(function (nota) {
+      nota.reacciones = {}; // contadores, ej. { encanta: 2 }
+      nota.mias = [];       // mis reacciones, ej. ["encanta"]
+      notaPorId[nota.id] = nota;
+    });
+
+    // 5. Repartimos los contadores en su nota.
+    // COUNT(*) llega como texto, por eso Number(...).
+    conteos.rows.forEach(function (fila) {
+      const nota = notaPorId[fila.nota_id];
+      if (nota) nota.reacciones[fila.tipo] = Number(fila.total);
+    });
+
+    // 6. Repartimos mis reacciones en su nota
+    mias.rows.forEach(function (fila) {
+      const nota = notaPorId[fila.nota_id];
+      if (nota) nota.mias.push(fila.tipo);
+    });
+
+    res.json(notas);
   } catch (error) {
     console.error("Error al leer las notas:", error);
     res.status(500).json({ error: "No se pudieron leer las notas" });
