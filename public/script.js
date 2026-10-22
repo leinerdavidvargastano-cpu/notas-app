@@ -32,6 +32,10 @@ const REACCIONES = [
   { clave: "ramon", emoji: "🍆", nombre: "Ramón" },
 ];
 
+// Acuerda cuál fue la última reacción que presionaste, para animar SOLO ese botón.
+// Es null cuando no hay ninguna pendiente de animar.
+let ultimaReaccion = null;
+
 
 const formulario = document.querySelector("#formulario");
 const campoTitulo = document.querySelector("#titulo");
@@ -116,6 +120,19 @@ async function reaccionar(notaId, tipo) {
       throw new Error("El servidor rechazó la reacción");
     }
 
+        if (!respuesta.ok) {
+      throw new Error("El servidor rechazó la reacción");
+    }
+
+    // NUEVO: guardamos cuál reacción presionaste, antes de redibujar la lista
+    ultimaReaccion = { notaId: notaId, tipo: tipo };
+
+    // Volvemos a pedir las notas para que se actualicen los contadores
+    await cargarNotas();
+    
+
+
+
     // Volvemos a pedir las notas para que se actualicen los contadores
     await cargarNotas();
   } catch (error) {
@@ -183,9 +200,16 @@ function crearReacciones(nota) {
     // title: el texto que aparece al dejar el mouse encima
     boton.title = reaccion.nombre;
 
-    // ¿La puse yo? nota.mias es la lista que manda el servidor
+        // ¿La puse yo? nota.mias es la lista que manda el servidor
     if ((nota.mias || []).includes(reaccion.clave)) {
       boton.classList.add("activa");
+
+      // NUEVO: si es justo la reacción que acabas de presionar, la animamos.
+      // Después limpiamos la variable para que no se repita en otra recarga.
+      if (ultimaReaccion && ultimaReaccion.notaId === nota.id && ultimaReaccion.tipo === reaccion.clave) {
+        boton.classList.add("pop");
+        ultimaReaccion = null;
+      }
     }
 
     boton.append(crear("span", "", reaccion.emoji));

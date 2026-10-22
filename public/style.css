@@ -165,7 +165,6 @@ button:hover { background: var(--vino); }
   margin-bottom: 0.6rem;
 }
 
-/* Cada botón de reacción: forma de "píldora" con borde redondeado */
 .reaccion {
   display: inline-flex;
   align-items: center;
@@ -177,8 +176,22 @@ button:hover { background: var(--vino); }
   border-radius: 999px;
   font-size: 1rem;
   font-weight: 400;
+
+  /* NUEVO: los cambios de tamaño y color ocurren suavemente en 0.15 segundos,
+     en vez de saltar de golpe */
+  transition: transform 0.15s ease, background 0.2s ease;
 }
-.reaccion:hover { background: var(--rosa); }
+
+/* NUEVO: al pasar el mouse, sube 2px y crece un 8% */
+.reaccion:hover {
+  background: var(--rosa);
+  transform: translateY(-2px) scale(1.08);
+}
+
+/* NUEVO: mientras lo presionas, se hunde */
+.reaccion:active {
+  transform: scale(0.9);
+}
 
 /* El número del contador, más pequeño que el emoji */
 .reaccion-numero {
@@ -194,3 +207,28 @@ button:hover { background: var(--vino); }
   color: #fff;
 }
 .reaccion.activa:hover { background: var(--vino); }
+
+
+/* ---------- ANIMACIÓN "POP" AL ACTIVAR UNA REACCIÓN ---------- */
+/* @keyframes define los pasos de la animación, de 0% a 100% de su duración */
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45) rotate(-8deg); }  /* crece y se inclina */
+  70%  { transform: scale(0.95) rotate(4deg); }   /* rebota hacia el otro lado */
+  100% { transform: scale(1) rotate(0); }         /* vuelve a la normalidad */
+}
+
+/* La clase "pop" la pone el JavaScript solo al botón recién presionado */
+.reaccion.pop {
+  animation: pop 0.45s ease;
+}
+
+/* Si la persona tiene activada la opción "reducir movimiento" en su
+   dispositivo, quitamos las animaciones. Es una buena práctica de accesibilidad. */
+@media (prefers-reduced-motion: reduce) {
+  .reaccion,
+  .reaccion.pop {
+    transition: none;
+    animation: none;
+  }
+}
