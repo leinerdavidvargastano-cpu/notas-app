@@ -127,6 +127,60 @@ app.delete("/api/notas/:id", requiereSesion, async function (req, res) {
 });
 
 
+// ---------- PONER O QUITAR UNA REACCIÓN ----------
+// POST /api/notas/5/reacciones   con el cuerpo { "tipo": "encanta" }
+
+// Lista blanca: solo estas reacciones son válidas. Igual que con los autores,
+// así nadie puede inventar una reacción saltándose el frontend.
+const REACCIONES_VALIDAS = ["encanta", "gusta", "asombra", "divierte", "amen", "ramon"];
+
+app.post("/api/notas/:id/reacciones", requiereSesion, async function (req, res) {
+  // req.params.id llega como texto; Number() lo vuelve número
+  const notaId = Number(req.params.id);
+  const tipo = req.body.tipo;
+
+  // Number.isInteger revisa que sea un número entero (no "abc" ni 2.5)
+  if (!Number.isInteger(notaId)) {
+    return res.status(400).json({ error: "La nota no es válida" });
+  }
+  if (!REACCIONES_VALIDAS.includes(tipo)) {
+    return res.status(400).json({ error: "Esa reacción no existe" });
+  }
+
+  // Quién reacciona: lo sacamos de la SESIÓN, no de lo que mande el navegador.
+  // Así nadie puede reaccionar en nombre de otra persona.
+  const usuarioId = req.session.usuarioId;
+
+  try {
+    // 1. Intentamos BORRAR esa reacción. rowCount dice cuántas filas se borraron:
+    // 1 si existía (la persona ya la había puesto), 0 si no existía.
+    const borrada = await pool.query(
+      "DELETE FROM reacciones WHERE nota_id = $1 AND usuario_id = $2 AND tipo = $3",
+      [notaId, usuarioId, tipo]
+    );
+
+    // 2. Si se borró algo, era un "quitar": ya terminamos.
+    if (borrada.rowCount > 0) {
+      return res.json({ activa: false });
+    }
+
+    // 3. Si no había nada que borrar, era un "poner": insertamos la reacción.
+    await pool.query(
+      "INSERT INTO reacciones (nota_id, usuario_id, tipo) VALUES ($1, $2, $3)",
+      [notaId, usuarioId, tipo]
+    );
+    res.status(201).json({ activa: true });
+  } catch (error) {
+    // 23503 es el código de PostgreSQL cuando se rompe una llave foránea:
+    // aquí significa que esa nota no existe.
+    if (error.code === "23503") {
+      return res.status(404).json({ error: "Esa nota no existe" });
+    }
+    console.error("Error al reaccionar:", error);
+    res.status(500).json({ error: "No se pudo guardar la reacción" });
+  }
+});
+
 
 // ---------- REGISTRAR UN USUARIO ----------
 // POST /api/registro
