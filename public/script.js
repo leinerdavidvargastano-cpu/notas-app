@@ -45,6 +45,16 @@ const mensajeVacio = document.querySelector("#vacio");
 const selector = document.querySelector("#selector");
 const autorActual = document.querySelector("#autor-actual");
 
+
+// Ventana de confirmación para eliminar
+const confirmar = document.querySelector("#confirmar");
+const confirmarTexto = document.querySelector("#confirmar-texto");
+
+// Guarda el id del recuerdo que se quiere eliminar, mientras la persona decide.
+// null significa que no hay ninguno pendiente.
+let notaPorEliminar = null;
+
+
 // Quién eres: se recuerda en el navegador con localStorage.
 let autor = localStorage.getItem("autor");
 if (!PERSONAS[autor]) autor = null;
@@ -253,7 +263,7 @@ function mostrarNotas(notas) {
 
     const boton = crear("button", "boton-eliminar", "Eliminar");
     boton.type = "button";
-    boton.addEventListener("click", function () { eliminarNota(nota.id); });
+    boton.addEventListener("click", function () { pedirConfirmacion(nota.id, titulo); });
     cuerpo.append(boton);
 
     const item = crear("li", "nota");
@@ -322,4 +332,38 @@ document.querySelector("#cerrar-sesion").addEventListener("click", async functio
   }
   // Pase lo que pase, mandamos a la pantalla de entrada
   window.location.href = "/login.html";
+});
+
+
+
+
+// ---------- 8. CONFIRMAR ANTES DE ELIMINAR ----------
+
+// Se ejecuta al presionar "Eliminar": NO borra, solo abre la ventana
+function pedirConfirmacion(id, titulo) {
+  // Recordamos cuál recuerdo era
+  notaPorEliminar = id;
+
+  // Mostramos el título entre comillas; si no tiene, un texto genérico
+  confirmarTexto.textContent = titulo ? "«" + titulo + "»" : "Este recuerdo";
+
+  // showModal abre la ventana y oscurece el fondo
+  confirmar.showModal();
+}
+
+// "Cancelar": cerramos y olvidamos el recuerdo pendiente
+document.querySelector("#confirmar-no").addEventListener("click", function () {
+  notaPorEliminar = null;
+  confirmar.close();
+});
+
+// "Sí, eliminar": aquí sí se borra, usando la función que ya tenías
+document.querySelector("#confirmar-si").addEventListener("click", async function () {
+  const id = notaPorEliminar;
+  notaPorEliminar = null;
+  confirmar.close();
+
+  if (id !== null) {
+    await eliminarNota(id);
+  }
 });

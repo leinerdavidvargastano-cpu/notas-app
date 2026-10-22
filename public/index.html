@@ -54,6 +54,20 @@
       </div>
     </dialog>
 
+        <!-- Ventana de confirmación para eliminar un recuerdo -->
+    <!-- class="selector": reutiliza el estilo crema de la otra ventana -->
+    <dialog id="confirmar" class="selector confirmacion">
+      <h2>¿Eliminar este recuerdo?</h2>
+      <!-- Aquí el JavaScript escribe el título del recuerdo -->
+      <p id="confirmar-texto"></p>
+      <p class="aviso">Esta acción no se puede deshacer.</p>
+
+      <div class="botones-confirmar">
+        <button type="button" id="confirmar-no" class="boton-cancelar">Cancelar</button>
+        <button type="button" id="confirmar-si">Sí, eliminar</button>
+      </div>
+    </dialog>
+
     <script src="script.js"></script>
   </body>
 </html>

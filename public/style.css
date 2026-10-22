@@ -232,3 +232,26 @@ button:hover { background: var(--vino); }
     animation: none;
   }
 }
+
+
+
+
+/* ---------- VENTANA DE CONFIRMAR ELIMINAR ---------- */
+.confirmacion { max-width: 340px; }
+.confirmacion p { color: var(--texto); overflow-wrap: anywhere; }
+.confirmacion .aviso { color: var(--suave); font-size: 0.85rem; margin-top: 0.5rem; }
+
+.botones-confirmar {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+/* "Cancelar": transparente con borde, para que "Sí, eliminar" sea el protagonista */
+.boton-cancelar {
+  background: transparent;
+  color: var(--vino-claro);
+  border: 1px solid var(--vino-claro);
+}
+.boton-cancelar:hover { background: var(--rosa); color: var(--vino); }
