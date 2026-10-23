@@ -10,6 +10,9 @@
   --texto: #0B1533;
   --suave: #182f4b;
   --borde: #DBEAFE;
+    /* Colores del logo MAYLEN */
+  --azul-logo: #2d7dff;
+  --rosa-logo: #ff6fb5;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -142,18 +145,7 @@ button:hover { background: var(--vino); }
 .opcion .avatar { --t: 96px; font-size: 2rem; }
 
 
-/* ---------- BOTÓN CERRAR SESIÓN ---------- */
-/* Transparente con borde claro, para que se vea bien sobre el fondo vinotinto del encabezado */
-.boton-salir {
-  margin-top: 0.6rem;
-  padding: 0.3rem 0.9rem;
-  background: transparent;
-  color: #fff;
-  border: 1px solid var(--borde);
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-.boton-salir:hover { background: var(--rosa); color: var(--vino); }
+
 
 
 /* ---------- REACCIONES ---------- */
@@ -268,3 +260,101 @@ button:hover { background: var(--vino); }
 /* Si no hay ninguna reacción, el párrafo está vacío y lo escondemos
    para que no deje un hueco */
 .reaccion-texto:empty { display: none; }
+
+
+/* ---------- HEADER NUEVO ---------- */
+/* Usamos la clase .header (la de index.html) para no afectar al header del login */
+.header {
+  position: sticky;      /* se queda arriba al bajar por la lista de recuerdos */
+  top: 0;
+  z-index: 50;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  background: rgba(255, 250, 243, 0.92);   /* crema semitransparente */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);             /* difumina lo que pasa por detrás */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Línea de degradado azul → rosa en el borde inferior, como los colores del logo */
+.header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--azul-logo), var(--rosa-logo));
+}
+
+/* Tres columnas: "1fr auto 1fr" deja el título EXACTAMENTE en el centro,
+   porque las columnas de los lados miden lo mismo */
+.header-interior {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Logo */
+.header-logo {
+  justify-self: start;
+  display: block;
+  line-height: 0;          /* evita un espacio extra debajo de la imagen */
+  transition: transform 0.2s ease;
+}
+.header-logo:hover { transform: scale(1.06); }
+.header-logo img { height: 72px; width: auto; }
+
+/* Título con degradado de color: el degradado se pinta detrás del texto
+   y background-clip: text lo recorta con la forma de las letras */
+.header-titulo { text-align: center; }
+.header h1 {
+  font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+  line-height: 1.15;
+  background: linear-gradient(90deg, #1d4ed8, #7c3aed, #db2777);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.header .subtitulo { margin-top: 0.15rem; color: var(--suave); font-size: 0.85rem; }
+
+/* Botón de cerrar sesión: contorno, con icono */
+.header .boton-salir {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.5rem 0.95rem;
+  background: transparent;
+  color: var(--vino);
+  border: 1px solid var(--vino-claro);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.header .boton-salir:hover { background: var(--vino-claro); color: #fff; }
+.header .boton-salir svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;    /* el icono toma el color del texto */
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Celular: el título ocupa el centro, el logo se achica,
+   y el botón queda solo con el icono (conserva su aria-label) */
+@media (max-width: 560px) {
+  .header-interior { grid-template-columns: auto 1fr auto; gap: 0.5rem; }
+  .header-logo img { height: 52px; }
+  .header .subtitulo { display: none; }
+  .boton-salir-texto { display: none; }
+  .header .boton-salir { padding: 0.6rem; }
+}

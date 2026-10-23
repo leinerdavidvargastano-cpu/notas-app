@@ -10,10 +10,31 @@
   </head>
 
   <body>
-    <header class="header">
-      <h1>MayLen</h1>
-      <p class="subtitulo">Lo que escribas aquí se guarda en la base de datos del servidor.</p>
-      <button type="button" id="cerrar-sesion" class="boton-salir">Cerrar sesión</button>
+        <header class="header">
+      <div class="header-interior">
+
+        <!-- Logo a la izquierda. alt="" porque el enlace ya tiene su aria-label -->
+        <a class="header-logo" href="/" aria-label="MAYLEN, ir al inicio">
+          <img src="img/logo.png" alt="" width="72" height="72" />
+        </a>
+
+        <!-- Título en el centro -->
+        <div class="header-titulo">
+          <h1>Nuestros recuerdos</h1>
+          <p class="subtitulo">Lo que no queremos olvidar</p>
+        </div>
+
+        <!-- Cerrar sesión a la derecha. Conserva el id="cerrar-sesion": tu JavaScript lo usa -->
+        <button type="button" id="cerrar-sesion" class="boton-salir" aria-label="Cerrar sesión">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          <span class="boton-salir-texto">Cerrar sesión</span>
+        </button>
+
+      </div>
     </header>
 
     <main class="contenedor">
