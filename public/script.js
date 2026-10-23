@@ -1,12 +1,55 @@
 // ---------- GUARDIA: SOLO ENTRA QUIEN TIENE SESIÓN ----------
 // Le preguntamos al servidor quién somos. La cookie viaja sola en la petición.
-fetch("/api/yo").then(function (respuesta) {
-  // respuesta.ok es false cuando el servidor contestó 401 (sin sesión)
-  if (!respuesta.ok) {
-    // window.location.href cambia la dirección del navegador
-    window.location.href = "/login.html";
-  }
+// ---------- PANTALLA DE CARGA Y GUARDIA DE SESIÓN ----------
+const pantallaCarga = document.querySelector("#pantalla-carga");
+const textoCarga = document.querySelector("#carga-texto");
+const botonReintentar = document.querySelector("#carga-reintentar");
+
+// Si tarda más de 6 segundos, avisamos para que no parezca que se trabó
+const avisoLento = setTimeout(function () {
+  textoCarga.textContent = "Esto está tardando más de lo normal…";
+}, 6000);
+
+function ocultarPantallaCarga() {
+  clearTimeout(avisoLento);
+  pantallaCarga.classList.add("oculta");
+}
+
+// Si el servidor no responde, mostramos un mensaje y el botón para reintentar
+function mostrarErrorCarga() {
+  clearTimeout(avisoLento);
+  textoCarga.textContent = "No se pudo conectar con el servidor.";
+  botonReintentar.hidden = false;
+}
+
+botonReintentar.addEventListener("click", function () {
+  window.location.reload();
 });
+
+// Pregunta al servidor si hay sesión. Devuelve true o false.
+async function verificarSesion() {
+  try {
+    const respuesta = await fetch("/api/yo");
+
+    if (respuesta.ok) return true;
+
+    if (respuesta.status === 401) {
+      // Sin sesión: vamos al login SIN quitar la pantalla de carga.
+      // "replace" no deja la página actual en el historial, así que el botón
+      // "atrás" no devuelve a una pantalla que rebota otra vez al login.
+      window.location.replace("/login.html");
+      return false;
+    }
+
+    // Cualquier otro error del servidor
+    mostrarErrorCarga();
+    return false;
+  } catch (error) {
+    // No hubo conexión
+    mostrarErrorCarga();
+    return false;
+  }
+}
 
 
 
@@ -331,12 +374,35 @@ formulario.addEventListener("submit", async function (evento) {
 
 
 // ---------- 6. INICIO ----------
-if (autor) {
-  autorActual.textContent = PERSONAS[autor].nombre;
-} else {
-  selector.showModal();
+async function arrancar() {
+  // 1. ¿Hay sesión? Si no, verificarSesion ya mandó al login y aquí paramos
+  const haySesion = await verificarSesion();
+  if (!haySesion) return;
+
+  // 2. Preparamos el nombre de quien publica
+  if (autor) {
+    autorActual.textContent = PERSONAS[autor].nombre;
+  }
+
+  // 3. Cargamos los recuerdos ANTES de quitar la pantalla de carga,
+  // para que no se vea un instante el mensaje "Todavía no hay recuerdos"
+  await cargarNotas();
+
+  // 4. Todo listo: la pantalla de carga se desvanece
+  ocultarPantallaCarga();
+
+  // 5. Si aún no eligió quién es, abrimos la ventana "¿Quién eres?".
+  // Va DESPUÉS de quitar la pantalla de carga: showModal() dibuja la ventana
+  // por encima de todo, y se vería sobre la pantalla de carga.
+  if (!autor) {
+    selector.showModal();
+  }
 }
-cargarNotas();
+
+arrancar();
+
+
+
 
 // ---------- 7. CERRAR SESIÓN ----------
 document.querySelector("#cerrar-sesion").addEventListener("click", async function () {

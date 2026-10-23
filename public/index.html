@@ -6,10 +6,22 @@
     <title>Nuestros recuerdos</title>
     <link rel="stylesheet" href="style.css" />
         <!-- Icono que aparece en la pestaña del navegador -->
-    <link rel="icon" href="img/favicon.ico" sizes="any" />
-  </head>
+        <link rel="icon" href="img/maylen-favicon.ico" sizes="any" />
+        
+            <noscript><style>.pantalla-carga { display: none; }</style></noscript>
+      </head>
 
-  <body>
+  <body>    
+    <!-- Pantalla de carga: cubre toda la página hasta confirmar la sesión -->
+    <!-- role="status" y aria-live: un lector de pantalla anuncia los cambios del texto -->
+    <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
+      <img class="carga-logo" src="img/logo.png" alt="MAYLEN" width="140" height="140" />
+      <div class="carga-anillo" aria-hidden="true"></div>
+      <p class="carga-texto" id="carga-texto">Cargando…</p>
+      <!-- Solo aparece si algo falla -->
+      <button type="button" id="carga-reintentar" class="boton-texto" hidden>Reintentar</button>
+    </div>
+        
         <header class="header">
       <div class="header-interior">
 
