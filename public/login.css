@@ -64,3 +64,24 @@
   border-radius: 20px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
+
+/* ---------- HEADER DEL LOGIN (variante del header principal) ---------- */
+/* El login no necesita quedarse pegado arriba al hacer scroll */
+.header-login { position: relative; }
+
+/* Una sola columna, todo centrado: el logo arriba y el título debajo */
+.header-login .header-interior {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0;
+}
+.header-login .header-logo { justify-self: center; }
+.header-login .header-logo img { height: 96px; }
+
+@media (max-width: 560px) {
+  .header-login .header-logo img { height: 76px; }
+  /* style.css esconde el subtítulo en celular para el header principal;
+     en el login sí lo dejamos, porque hay espacio de sobra */
+  .header-login .subtitulo { display: block; }
+}

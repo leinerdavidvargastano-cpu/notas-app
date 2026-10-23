@@ -15,10 +15,20 @@
 <body>
 
   <!-- El mismo encabezado vinotinto de tu página principal -->
-  <header>
-    <h1>Bienvenida a MayLen 
-    </h1>
-    <p class="subtitulo">Un lugar solo para dos</p>
+    <header class="header header-login">
+    <div class="header-interior">
+
+      <!-- Aquí el logo no es un enlace: sin sesión, "/" mandaría de vuelta al login -->
+      <div class="header-logo">
+        <img src="img/logo.png" alt="MAYLEN" width="96" height="96" />
+      </div>
+
+      <div class="header-titulo">
+        <h1>Nuestros recuerdos</h1>
+        <p class="subtitulo">Un lugar para nuestra historia</p>
+      </div>
+
+    </div>
   </header>
 
   <main class="contenedor contenedor-login">
