@@ -3,13 +3,13 @@
 
 /* ---------- VARIABLES: cambia un color aquí y cambia en toda la página ---------- */
 :root {
-  --vino: #4d1421;
-  --vino-claro: #6b1e2e;
-  --rosa: #f6c6d0;
-  --crema: #fffaf3;
-  --texto: #2b1d20;
-  --suave: #7a6468;
-  --borde: #ead9d4;
+  --vino: #0B1533;
+  --vino-claro: #193470;
+  --rosa: #c6f1f6;
+  --crema: #F8FAFC;
+  --texto: #0B1533;
+  --suave: #182f4b;
+  --borde: #DBEAFE;
 }
 
 * { box-sizing: border-box; margin: 0; }
