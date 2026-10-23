@@ -50,3 +50,17 @@
 .cambio a:hover {
   color: var(--vino);
 }
+
+/* ---------- LOGO ---------- */
+.logo-app {
+  display: block;
+  width: 190px;            /* tamaño en pantalla; el archivo mide 512, así se ve nítido en celulares */
+  height: auto;            /* mantiene la proporción */
+  margin: 0 auto 1rem;     /* centrado, con espacio debajo */
+  /* El PNG es transparente: esta tarjeta crema le da un fondo claro para que
+     el texto azul marino se lea sobre la foto y el vinotinto de la página */
+  padding: 1rem 1.25rem;
+  background: rgba(255, 250, 243, 0.94);
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
