@@ -449,3 +449,14 @@ document.querySelector("#confirmar-si").addEventListener("click", async function
     await eliminarNota(id);
   }
 });
+
+
+// ---------- REGISTRAR EL SERVICE WORKER ----------
+// Se registra cuando la página termina de cargar, para no frenar la pantalla de carga
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js").catch(function (error) {
+      console.error("No se pudo registrar el service worker:", error);
+    });
+  });
+}

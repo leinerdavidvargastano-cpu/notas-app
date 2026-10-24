@@ -114,3 +114,13 @@ formLogin.addEventListener("submit", async function (evento) {
     parrafoError.textContent = "No se pudo conectar con el servidor";
   }
 });
+
+// ---------- REGISTRAR EL SERVICE WORKER ----------
+// Se registra cuando la página termina de cargar, para no frenar la pantalla de carga
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js").catch(function (error) {
+      console.error("No se pudo registrar el service worker:", error);
+    });
+  });
+}
