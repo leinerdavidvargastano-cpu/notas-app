@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+        <!-- Ficha de la app instalable -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#fffaf3" />
+
+    <!-- Para iPhone (iOS ignora parte del manifiesto y usa estas etiquetas) -->
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MAYLEN" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nuestros recuerdos</title>
+    <link rel="stylesheet" href="style.css" />
+        <!-- Icono que aparece en la pestaña del navegador -->
+        <link rel="icon" href="img/logo_maylen.ico" sizes="any" />
+        
+            <noscript><style>.pantalla-carga { display: none; }</style></noscript>
+      </head>
+
+  <body>    
+    <!-- Pantalla de carga: cubre toda la página hasta confirmar la sesión -->
+    <!-- role="status" y aria-live: un lector de pantalla anuncia los cambios del texto -->
+    <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
+      <img class="carga-logo" src="img/logo.png" alt="MAYLEN" width="140" height="140" />
+      <div class="carga-anillo" aria-hidden="true"></div>
+      <p class="carga-texto" id="carga-texto">Cargando…</p>
+      <!-- Solo aparece si algo falla -->
+      <button type="button" id="carga-reintentar" class="boton-texto" hidden>Reintentar</button>
+    </div>
+        
+        <header class="header">
+      <div class="header-interior">
+
+        <!-- Logo a la izquierda. alt="" porque el enlace ya tiene su aria-label -->
+        <a class="header-logo" href="/" aria-label="MAYLEN, ir al inicio">
+          <img src="img/logo.png" alt="" width="72" height="72" />
+        </a>
+
+        <!-- Título en el centro -->
+        <div class="header-titulo">
+          <h1>Nuestros recuerdos</h1>
+          <p class="subtitulo">Lo que no queremos olvidar</p>
+        </div>
+
+        <!-- Cerrar sesión a la derecha. Conserva el id="cerrar-sesion": tu JavaScript lo usa -->
+        <button type="button" id="cerrar-sesion" class="boton-salir" aria-label="Cerrar sesión">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          <span class="boton-salir-texto">Cerrar sesión</span>
+        </button>
+
+      </div>
+    </header>
+
+    <main class="contenedor">
+
+      <form id="formulario" class="formulario">
+        <!-- Quién publica: lo llena el JS según la ventana emergente -->
+        <p class="publicando">
+          Publicando como <strong id="autor-actual"></strong>
+          <button type="button" id="cambiar" class="boton-texto">Cambiar</button>
+        </p>
+
+        <label for="titulo">Título</label>
+        <input id="titulo" name="titulo" type="text" maxlength="80" placeholder="Ponle nombre a este recuerdo" required />
+
+        <label for="texto">Recuerdo</label>
+        <textarea id="texto" name="texto" rows="4" placeholder="Escribe algo que no quieras olvidar" required></textarea>
+
+        <button type="submit">Guardar recuerdo</button>
+      </form>
+
+      <ul id="lista" class="lista"></ul>
+      <p id="vacio" class="vacio" hidden>Todavía no hay recuerdos. Escribe el primero arriba.</p>
+      <!-- Imagen de portada: pon nosotros.png en la carpeta public -->
+      <br>
+      <br>
+      <img class="portada" src="img/nosotros.png" alt="Lele y Mayita" />
+    
+    </main>
+
+    <!-- Ventana emergente: <dialog> es una etiqueta nativa de HTML -->
+    <dialog id="selector" class="selector">
+      <h2>¿Quién eres?</h2>
+      <div class="opciones">
+        <!-- Fotos: pon lele.jpg y mayita.jpg en public/img/. Si no existen, se ve la inicial -->
+        <button type="button" class="opcion" data-autor="lele">
+          <span class="avatar" data-i="L"><img src="img/lele.jpg" alt="" onerror="this.remove()" /></span>
+          Lele
+        </button>
+        <button type="button" class="opcion" data-autor="mayita">
+          <span class="avatar" data-i="M"><img src="img/mayita.jpg" alt="" onerror="this.remove()" /></span>
+          Mayita
+        </button>
+      </div>
+    </dialog>
+
+        <!-- Ventana de confirmación para eliminar un recuerdo -->
+    <!-- class="selector": reutiliza el estilo crema de la otra ventana -->
+    <dialog id="confirmar" class="selector confirmacion">
+      <h2>¿Eliminar este recuerdo?</h2>
+      <!-- Aquí el JavaScript escribe el título del recuerdo -->
+      <p id="confirmar-texto"></p>
+      <p class="aviso">Esta acción no se puede deshacer.</p>
+
+      <div class="botones-confirmar">
+        <button type="button" id="confirmar-no" class="boton-cancelar">Cancelar</button>
+        <button type="button" id="confirmar-si">Sí, eliminar</button>
+      </div>
+    </dialog>
+
+      
+
+    <script src="script.js"></script>
+  </body>
+</html>

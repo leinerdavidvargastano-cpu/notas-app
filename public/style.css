@@ -412,3 +412,56 @@ button:hover { background: var(--vino); }
   .carga-anillo { animation: none; }
   .pantalla-carga { transition: none; }
 }
+
+/* ---------- DISTRIBUCIÓN EN PC: formulario fijo y recuerdos desplazables ---------- */
+@media (min-width: 800px) {
+  .contenedor {
+    width: min(100% - 3rem, 1440px);
+    max-width: 1440px;
+    margin: 1.5rem auto 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); /* 40% / 60% */
+    align-items: start;
+    gap: 1.5rem;
+  }
+
+  .formulario {
+    position: sticky;
+    top: 105px; /* queda debajo del encabezado fijo */
+    align-self: start;
+    min-width: 0;
+    max-height: calc(100vh - 125px);
+    overflow-y: auto;
+  }
+
+  .panel-recuerdos {
+    min-width: 0;
+  }
+
+  .lista {
+    margin-top: 0;
+  }
+
+  .portada {
+    margin-top: 1.5rem;
+  }
+}
+
+/* En móvil/tablet se conserva el flujo vertical que ya tenía la página. */
+@media (max-width: 799px) {
+  .contenedor {
+    display: block;
+  }
+
+  .formulario {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .panel-recuerdos {
+    display: block;
+  }
+}
+

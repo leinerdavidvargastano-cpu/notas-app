@@ -1,0 +1,414 @@
+
+
+
+/* ---------- VARIABLES: cambia un color aquí y cambia en toda la página ---------- */
+:root {
+  --vino: #0B1533;
+  --vino-claro: #193470;
+  --rosa: #c6f1f6;
+  --crema: #F8FAFC;
+  --texto: #0B1533;
+  --suave: #182f4b;
+  --borde: #DBEAFE;
+    /* Colores del logo MAYLEN */
+  --azul-logo: #2d7dff;
+  --rosa-logo: #ff6fb5;
+}
+
+* { box-sizing: border-box; margin: 0; }
+[hidden] { display: none !important; }
+
+/* Fondo: la foto con una capa vinotinto encima para que el texto se lea */
+body {
+  background:
+    linear-gradient(rgba(77, 20, 33, 0.35), rgba(77, 20, 33, 0.35)),
+    url(img/imd\ del\ doom\ de\ maylen.png) center 30% / cover fixed;
+  color: var(--texto);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  padding-bottom: 2rem;
+}
+
+header { background: var(--vino); padding: 1.25rem 1rem; text-align: center; }
+h1 { color: #fff; font: italic 2rem Georgia, serif; }
+.subtitulo { color: var(--borde); margin-top: 0.25rem; font-size: 0.9rem; }
+
+.contenedor { max-width: 560px; margin: 1.5rem auto 0; padding: 0 1rem; }
+
+.portada {
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+  border: 3px solid var(--crema);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  margin-bottom: 1.25rem;
+}
+
+/* ---------- FORMULARIO ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  background: rgba(255, 250, 243, 0.94);
+  border: 1px solid var(--vino);
+  border-radius: 16px;
+}
+.formulario label { font-weight: 600; }
+.formulario input,
+.formulario textarea {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+.formulario textarea { resize: vertical; }
+.formulario input:focus,
+.formulario textarea:focus { outline: 2px solid var(--vino-claro); outline-offset: 1px; }
+.publicando { color: var(--suave); font-size: 0.9rem; }
+.publicando strong { color: var(--vino-claro); }
+
+/* ---------- BOTONES ---------- */
+button {
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--vino-claro);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:hover { background: var(--vino); }
+.boton-texto { padding: 0; background: none; color: var(--vino-claro); text-decoration: underline; font-weight: 400; }
+.boton-texto:hover { background: none; color: var(--vino); }
+
+/* ---------- AVATAR: la inicial se ve si la foto no existe ---------- */
+.avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--t, 48px);
+  height: var(--t, 48px);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--rosa);
+  color: var(--vino);
+  font-weight: 700;
+}
+.avatar::before { content: attr(data-i); }
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- TARJETAS ---------- */
+.lista { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.25rem; padding: 0; list-style: none; }
+.nota {
+  display: flex;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+
+
+  /*background-color: rgba(255, 255, 255, 0.831);*/
+   
+  background-color: rgba(221, 220, 220, 0.393);
+  
+  -webkit-backdrop-filter: blur(10px);  
+  backdrop-filter: blur(10px);
+  
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+  color: #000000;  
+  
+
+  border-left: 4px solid var(--vino-claro);
+  border-radius: 12px;
+}
+.nota-cuerpo { flex: 1; min-width: 0; }
+.nota-cabecera { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.85rem; color: var(--suave); }
+.nota-cabecera strong { color: var(--vino-claro); }
+.nota h3 { font: italic 1.15rem Georgia, serif; margin: 0.2rem 0; }
+.nota p { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 0.5rem; }
+.boton-eliminar { padding: 0.3rem 0.7rem; background: transparent; color: var(--vino-claro); border: 1px solid var(--vino-claro); font-size: 0.8rem; }
+.boton-eliminar:hover { background: var(--vino-claro); color: #fff; }
+.vacio { margin-top: 1.25rem; text-align: center; color: #fff; }
+
+/* ---------- VENTANA EMERGENTE ---------- */
+.selector { margin: auto; border: none; border-radius: 18px; padding: 1.75rem; background: var(--crema); text-align: center; }
+.selector::backdrop { background: rgba(40, 10, 18, 0.7); }
+.selector h2 { font: italic 1.5rem Georgia, serif; color: var(--vino); margin-bottom: 1.25rem; }
+.opciones { display: flex; gap: 1.5rem; justify-content: center; }
+.opcion { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0.75rem; background: none; color: var(--vino); border: 2px solid transparent; border-radius: 14px; }
+.opcion:hover { background: var(--rosa); border-color: var(--vino-claro); }
+.opcion .avatar { --t: 96px; font-size: 2rem; }
+
+
+
+
+
+/* ---------- REACCIONES ---------- */
+/* La fila que contiene los 6 botones; flex-wrap los baja de línea si no caben */
+.reacciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.reaccion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 250, 243, 0.75);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 400;
+
+  /* NUEVO: los cambios de tamaño y color ocurren suavemente en 0.15 segundos,
+     en vez de saltar de golpe */
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+/* NUEVO: al pasar el mouse, sube 2px y crece un 8% */
+.reaccion:hover {
+  background: var(--rosa);
+  transform: translateY(-2px) scale(1.08);
+}
+
+/* NUEVO: mientras lo presionas, se hunde */
+.reaccion:active {
+  transform: scale(0.9);
+}
+
+/* El número del contador, más pequeño que el emoji */
+.reaccion-numero {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* LA REACCIÓN QUE PUSISTE TÚ: fondo vinotinto y texto blanco.
+   Va después del :hover para que gane cuando se cumplen las dos cosas. */
+.reaccion.activa {
+  background: var(--vino-claro);
+  border-color: var(--vino);
+  color: #fff;
+}
+.reaccion.activa:hover { background: var(--vino); }
+
+
+/* ---------- ANIMACIÓN "POP" AL ACTIVAR UNA REACCIÓN ---------- */
+/* @keyframes define los pasos de la animación, de 0% a 100% de su duración */
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45) rotate(-8deg); }  /* crece y se inclina */
+  70%  { transform: scale(0.95) rotate(4deg); }   /* rebota hacia el otro lado */
+  100% { transform: scale(1) rotate(0); }         /* vuelve a la normalidad */
+}
+
+/* La clase "pop" la pone el JavaScript solo al botón recién presionado */
+.reaccion.pop {
+  animation: pop 0.45s ease;
+}
+
+/* Si la persona tiene activada la opción "reducir movimiento" en su
+   dispositivo, quitamos las animaciones. Es una buena práctica de accesibilidad. */
+@media (prefers-reduced-motion: reduce) {
+  .reaccion,
+  .reaccion.pop {
+    transition: none;
+    animation: none;
+  }
+}
+
+
+
+
+/* ---------- VENTANA DE CONFIRMAR ELIMINAR ---------- */
+.confirmacion { max-width: 340px; }
+.confirmacion p { color: var(--texto); overflow-wrap: anywhere; }
+.confirmacion .aviso { color: var(--suave); font-size: 0.85rem; margin-top: 0.5rem; }
+
+.botones-confirmar {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+/* "Cancelar": transparente con borde, para que "Sí, eliminar" sea el protagonista */
+.boton-cancelar {
+  background: transparent;
+  color: var(--vino-claro);
+  border: 1px solid var(--vino-claro);
+}
+.boton-cancelar:hover { background: var(--rosa); color: var(--vino); }
+
+/* ---------- TEXTO DE LAS REACCIONES QUE PUSE ---------- */
+.reacciones-bloque { margin-bottom: 0.6rem; }
+
+.reaccion-texto {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--vino-claro);
+}
+
+/* Si no hay ninguna reacción, el párrafo está vacío y lo escondemos
+   para que no deje un hueco */
+.reaccion-texto:empty { display: none; }
+
+
+/* ---------- HEADER NUEVO ---------- */
+/* Usamos la clase .header (la de index.html) para no afectar al header del login */
+.header {
+  position: sticky;      /* se queda arriba al bajar por la lista de recuerdos */
+  top: 0;
+  z-index: 50;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  background: rgba(255, 250, 243, 0.92);   /* crema semitransparente */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);             /* difumina lo que pasa por detrás */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Línea de degradado azul → rosa en el borde inferior, como los colores del logo */
+.header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--azul-logo), var(--rosa-logo));
+}
+
+/* Tres columnas: "1fr auto 1fr" deja el título EXACTAMENTE en el centro,
+   porque las columnas de los lados miden lo mismo */
+.header-interior {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Logo */
+.header-logo {
+  justify-self: start;
+  display: block;
+  line-height: 0;          /* evita un espacio extra debajo de la imagen */
+  transition: transform 0.2s ease;
+}
+.header-logo:hover { transform: scale(1.06); }
+.header-logo img { height: 72px; width: auto; }
+
+/* Título con degradado de color: el degradado se pinta detrás del texto
+   y background-clip: text lo recorta con la forma de las letras */
+.header-titulo { text-align: center; }
+.header h1 {
+  font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+  line-height: 1.15;
+  background: linear-gradient(90deg, #1d4ed8, #7c3aed, #db2777);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.header .subtitulo { margin-top: 0.15rem; color: var(--suave); font-size: 0.85rem; }
+
+/* Botón de cerrar sesión: contorno, con icono */
+.header .boton-salir {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.5rem 0.95rem;
+  background: transparent;
+  color: var(--vino);
+  border: 1px solid var(--vino-claro);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.header .boton-salir:hover { background: var(--vino-claro); color: #fff; }
+.header .boton-salir svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;    /* el icono toma el color del texto */
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Celular: el título ocupa el centro, el logo se achica,
+   y el botón queda solo con el icono (conserva su aria-label) */
+@media (max-width: 560px) {
+  .header-interior { grid-template-columns: auto 1fr auto; gap: 0.5rem; }
+  .header-logo img { height: 52px; }
+  .header .subtitulo { display: none; }
+  .boton-salir-texto { display: none; }
+  .header .boton-salir { padding: 0.6rem; }
+}
+
+
+/* ---------- PANTALLA DE CARGA ---------- */
+.pantalla-carga {
+  position: fixed;
+  inset: 0;                  /* atajo de top, right, bottom y left en 0: ocupa toda la pantalla */
+  z-index: 9999;             /* por encima de todo, incluido el header */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: 1rem;
+  background: var(--crema);
+  /* Al quitarla, se desvanece en 0,4 s */
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+/* La clase "oculta" la pone JavaScript cuando todo está listo.
+   visibility: hidden la saca también para lectores de pantalla y evita que
+   quede una capa invisible interceptando los clics. */
+.pantalla-carga.oculta {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* El logo "late" suavemente */
+.carga-logo { width: 140px; height: auto; animation: latido 1.6s ease-in-out infinite; }
+@keyframes latido {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.07); }
+}
+
+/* Anillo giratorio con los colores del logo: un anillo suave con dos lados de color */
+.carga-anillo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid rgba(45, 125, 255, 0.18);
+  border-top-color: var(--azul-logo);
+  border-right-color: var(--rosa-logo);
+  animation: girar 0.9s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
+
+.carga-texto { max-width: 280px; text-align: center; color: var(--suave); font-size: 0.95rem; }
+
+/* Con "reducir movimiento" activado, el anillo y el latido se quedan quietos */
+@media (prefers-reduced-motion: reduce) {
+  .carga-logo,
+  .carga-anillo { animation: none; }
+  .pantalla-carga { transition: none; }
+}
