@@ -97,6 +97,20 @@ function requiereSesion(req, res, next) {
 
 
 
+// Lista blanca: solo estas dos personas existen en la app
+const AUTORES_VALIDOS = ["lele", "mayita"];
+
+// Busca qué persona (lele o mayita) es la cuenta de la sesión.
+// Devuelve null si todavía no la ha elegido.
+async function autorDeLaSesion(req) {
+  const resultado = await pool.query(
+    "SELECT autor FROM usuarios WHERE id = $1",
+    [req.session.usuarioId]
+  );
+  return resultado.rows[0] ? resultado.rows[0].autor : null;
+}
+
+
 // ---------- LEER TODAS LAS NOTAS ----------
 // GET /api/notas
 app.get("/api/notas", requiereSesion, async function (req, res) {
@@ -153,11 +167,6 @@ app.get("/api/notas", requiereSesion, async function (req, res) {
 app.post("/api/notas", requiereSesion, async function (req, res) {
   const texto = (req.body.texto || "").trim();
   const titulo = (req.body.titulo || "").trim();
-  const autor = req.body.autor;
-
-  // Lista blanca: solo aceptamos estos dos autores. Así nadie puede
-  // enviar un nombre inventado saltándose el frontend.
-  const AUTORES_VALIDOS = ["lele", "mayita"];
 
   if (texto === "" || titulo === "") {
     return res.status(400).json({ error: "El título y el texto no pueden estar vacíos" });
@@ -165,13 +174,18 @@ app.post("/api/notas", requiereSesion, async function (req, res) {
   if (titulo.length > 80) {
     return res.status(400).json({ error: "El título es demasiado largo" });
   }
-  if (!AUTORES_VALIDOS.includes(autor)) {
-    return res.status(400).json({ error: "El autor debe ser lele o mayita" });
-  }
-
-  const fecha = new Date().toLocaleString("es-CO");
+  // La fecha con la hora de Colombia. Sin timeZone saldría la hora
+  // del servidor de Render, que usa UTC (5 horas más).
+  const fecha = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
   try {
+    // El autor sale de la CUENTA, no de lo que mande el navegador.
+    // Así nadie puede publicar haciéndose pasar por la otra persona.
+    const autor = await autorDeLaSesion(req);
+    if (!autor) {
+      return res.status(400).json({ error: "Primero elige quién eres" });
+    }
+
     // En PostgreSQL los espacios reservados son $1, $2, $3...
     // (en SQLite eran ?). Los valores van en un array, en el mismo orden.
     // RETURNING * pide que la base de datos devuelva la fila recién creada,
@@ -381,7 +395,7 @@ app.get("/api/yo", async function (req, res) {
     // Buscamos al usuario por el id que guardamos en la sesión al hacer login.
     // No pedimos el hash: solo el id y el correo.
     const resultado = await pool.query(
-      "SELECT id, email FROM usuarios WHERE id = $1",
+      "SELECT id, email, autor FROM usuarios WHERE id = $1",
       [req.session.usuarioId]
     );
 
@@ -395,6 +409,38 @@ app.get("/api/yo", async function (req, res) {
   } catch (error) {
     console.error("Error al consultar la sesión:", error);
     res.status(500).json({ error: "No se pudo consultar la sesión" });
+  }
+});
+
+
+// ---------- ELEGIR QUIÉN ERES (UNA SOLA VEZ) ----------
+// POST /api/yo/autor   con el cuerpo { "autor": "lele" }
+app.post("/api/yo/autor", requiereSesion, async function (req, res) {
+  const autor = req.body.autor;
+
+  if (!AUTORES_VALIDOS.includes(autor)) {
+    return res.status(400).json({ error: "El autor debe ser lele o mayita" });
+  }
+
+  try {
+    // "AND autor IS NULL": solo se puede elegir si todavía no tenía.
+    // Después ya no se puede cambiar desde la página.
+    const resultado = await pool.query(
+      "UPDATE usuarios SET autor = $1 WHERE id = $2 AND autor IS NULL",
+      [autor, req.session.usuarioId]
+    );
+
+    if (resultado.rowCount === 0) {
+      return res.status(409).json({ error: "Ya elegiste quién eres" });
+    }
+    res.json({ ok: true, autor: autor });
+  } catch (error) {
+    // 23505 = se rompió la regla UNIQUE: la otra cuenta ya es esa persona
+    if (error.code === "23505") {
+      return res.status(409).json({ error: "Esa persona ya la eligió la otra cuenta" });
+    }
+    console.error("Error al elegir autor:", error);
+    res.status(500).json({ error: "No se pudo guardar quién eres" });
   }
 });
 

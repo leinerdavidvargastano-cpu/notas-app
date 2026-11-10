@@ -35,6 +35,14 @@ async function iniciarBaseDeDatos() {
       ADD COLUMN IF NOT EXISTS autor TEXT
   `);
 
+  // Cada cuenta queda unida a UNA persona (lele o mayita).
+  // UNIQUE: las dos cuentas no pueden elegir a la misma persona.
+  // Empieza vacía (NULL): cada persona la elige una sola vez en "¿Quién eres?".
+  await pool.query(`
+    ALTER TABLE usuarios
+      ADD COLUMN IF NOT EXISTS autor TEXT UNIQUE
+  `);
+
   console.log("Base de datos PostgreSQL lista");
 }
 

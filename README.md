@@ -110,6 +110,12 @@ CREATE TABLE reacciones (
 
 `reacciones` necesita que `notas` y `usuarios` existan antes.
 
+La columna `usuarios.autor` (`lele` o `mayita`, única) se crea sola al iniciar. Cada cuenta la elige una vez en "¿Quién eres?" y el servidor la usa como autor de los recuerdos. Para cambiarla, en Neon:
+
+```sql
+UPDATE usuarios SET autor = NULL WHERE email = 'correo@ejemplo.com';
+```
+
 ## API
 
 | Método | Ruta | Sesión | Qué hace |
@@ -117,7 +123,8 @@ CREATE TABLE reacciones (
 | POST | `/api/registro` | No | Crea una cuenta (si quedan cupos) |
 | POST | `/api/login` | No | Inicia sesión y entrega la cookie |
 | POST | `/api/logout` | No | Cierra la sesión |
-| GET | `/api/yo` | No | Dice quién tiene la sesión (401 si nadie) |
+| GET | `/api/yo` | No | Dice quién tiene la sesión: `id`, `email` y `autor` (401 si nadie) |
+| POST | `/api/yo/autor` | Sí | Une la cuenta a una persona, una sola vez (`{ "autor": "lele" }`) |
 | GET | `/api/notas` | Sí | Lista los recuerdos, con contadores de reacciones (`reacciones`) y las propias (`mias`) |
 | POST | `/api/notas` | Sí | Crea un recuerdo |
 | DELETE | `/api/notas/:id` | Sí | Elimina un recuerdo |

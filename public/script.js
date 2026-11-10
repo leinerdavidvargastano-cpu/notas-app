@@ -1,5 +1,3 @@
-// ---------- GUARDIA: SOLO ENTRA QUIEN TIENE SESIÓN ----------
-// Le preguntamos al servidor quién somos. La cookie viaja sola en la petición.
 // ---------- PANTALLA DE CARGA Y GUARDIA DE SESIÓN ----------
 const pantallaCarga = document.querySelector("#pantalla-carga");
 const textoCarga = document.querySelector("#carga-texto");
@@ -26,28 +24,29 @@ botonReintentar.addEventListener("click", function () {
   window.location.reload();
 });
 
-// Pregunta al servidor si hay sesión. Devuelve true o false.
+// Pregunta al servidor quién tiene la sesión (la cookie viaja sola).
+// Devuelve los datos de la cuenta ({ id, email, autor }) o null si no hay sesión.
 async function verificarSesion() {
   try {
     const respuesta = await fetch("/api/yo");
 
-    if (respuesta.ok) return true;
+    if (respuesta.ok) return await respuesta.json();
 
     if (respuesta.status === 401) {
       // Sin sesión: vamos al login SIN quitar la pantalla de carga.
       // "replace" no deja la página actual en el historial, así que el botón
       // "atrás" no devuelve a una pantalla que rebota otra vez al login.
       window.location.replace("/login.html");
-      return false;
+      return null;
     }
 
     // Cualquier otro error del servidor
     mostrarErrorCarga();
-    return false;
+    return null;
   } catch (error) {
     // No hubo conexión
     mostrarErrorCarga();
-    return false;
+    return null;
   }
 }
 
@@ -98,19 +97,27 @@ const confirmarTexto = document.querySelector("#confirmar-texto");
 let notaPorEliminar = null;
 
 
-// Quién eres: se recuerda en el navegador con localStorage.
-let autor = localStorage.getItem("autor");
-if (!PERSONAS[autor]) autor = null;
-
-// Título y autor de esta sesión. TEMPORAL: el servidor todavía solo guarda
-// "texto"; cuando hagamos el backend, esto desaparece.
-const extras = {};
+// Quién eres ("lele" o "mayita"): viene de tu cuenta en el servidor.
+// Es null mientras no lo hayas elegido.
+let autor = null;
 
 
-// ---------- 2. HABLAR CON EL SERVIDOR (igual que antes) ----------
+// ---------- 2. HABLAR CON EL SERVIDOR ----------
+
+// Si la sesión venció (401), manda al login. Devuelve true si redirigió.
+function sesionVencida(respuesta) {
+  if (respuesta.status === 401) {
+    window.location.href = "/login.html";
+    return true;
+  }
+  return false;
+}
+
 async function cargarNotas() {
   try {
     const respuesta = await fetch(URL_API);
+    if (sesionVencida(respuesta)) return;
+
     const notas = await respuesta.json();
     mostrarNotas(notas);
   } catch (error) {
@@ -121,19 +128,16 @@ async function cargarNotas() {
 
 async function agregarNota(titulo, texto) {
   try {
+    // No mandamos el autor: el servidor lo saca de tu cuenta
     const respuesta = await fetch(URL_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // Enviamos también título y autor; el servidor actual los ignora.
-      body: JSON.stringify({ texto: texto, titulo: titulo, autor: autor }),
+      body: JSON.stringify({ texto: texto, titulo: titulo }),
     });
+    if (sesionVencida(respuesta)) return;
     if (!respuesta.ok) {
       throw new Error("El servidor rechazó la nota");
     }
-    // El servidor devuelve la nota creada (con su id): la usamos para
-    // acordarnos del título y el autor mientras la página siga abierta.
-    const creada = await respuesta.json();
-    extras[creada.id] = { titulo: titulo, autor: autor };
     await cargarNotas();
   } catch (error) {
     console.error("No se pudo guardar la nota:", error);
@@ -144,6 +148,7 @@ async function agregarNota(titulo, texto) {
 async function eliminarNota(id) {
   try {
     const respuesta = await fetch(`${URL_API}/${id}`, { method: "DELETE" });
+    if (sesionVencida(respuesta)) return;
     if (!respuesta.ok) {
       throw new Error("El servidor no pudo eliminar la nota");
     }
@@ -164,27 +169,13 @@ async function reaccionar(notaId, tipo) {
       body: JSON.stringify({ tipo: tipo }),
     });
 
-    // Si la sesión venció, mandamos al login
-    if (respuesta.status === 401) {
-      window.location.href = "/login.html";
-      return;
-    }
+    if (sesionVencida(respuesta)) return;
     if (!respuesta.ok) {
       throw new Error("El servidor rechazó la reacción");
     }
 
-        if (!respuesta.ok) {
-      throw new Error("El servidor rechazó la reacción");
-    }
-
-    // NUEVO: guardamos cuál reacción presionaste, antes de redibujar la lista
+    // Guardamos cuál reacción presionaste, antes de redibujar la lista
     ultimaReaccion = { notaId: notaId, tipo: tipo };
-
-    // Volvemos a pedir las notas para que se actualicen los contadores
-    await cargarNotas();
-    
-
-
 
     // Volvemos a pedir las notas para que se actualicen los contadores
     await cargarNotas();
@@ -194,26 +185,6 @@ async function reaccionar(notaId, tipo) {
   }
 }
 
-
-
-async function cargarNotas() {
-  try {
-    const respuesta = await fetch(URL_API);
-
-    // NUEVO: 401 significa que no hay sesión (o ya venció).
-    // Mandamos al login y paramos aquí, sin mostrar ningún error.
-    if (respuesta.status === 401) {
-      window.location.href = "/login.html";
-      return;
-    }
-
-    const notas = await respuesta.json();
-    mostrarNotas(notas);
-  } catch (error) {
-    console.error("No se pudieron cargar las notas:", error);
-    alert("No se pudo conectar con el servidor. ¿Está encendido?");
-  }
-}
 
 
 // ---------- 3. DIBUJAR EN PANTALLA ----------
@@ -305,10 +276,8 @@ function mostrarNotas(notas) {
   mensajeVacio.hidden = notas.length > 0;
 
   notas.forEach(function (nota) {
-    // Título y autor: los de esta sesión o, si algún día el servidor los envía, los suyos.
-    const datos = extras[nota.id] || {};
-    const titulo = datos.titulo || nota.titulo;
-    const clave = datos.autor || nota.autor;
+    const titulo = nota.titulo;
+    const clave = nota.autor;
     const persona = PERSONAS[clave];
 
     const cabecera = crear("div", "nota-cabecera");
@@ -333,11 +302,30 @@ function mostrarNotas(notas) {
 
 
 // ---------- 4. QUIÉN ERES (ventana emergente) ----------
-function elegirAutor(clave) {
-  autor = clave;
-  localStorage.setItem("autor", clave);
-  autorActual.textContent = PERSONAS[clave].nombre;
-  selector.close();
+// Se guarda en el servidor, unido a tu cuenta. Solo se puede hacer una vez.
+async function elegirAutor(clave) {
+  try {
+    const respuesta = await fetch("/api/yo/autor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ autor: clave }),
+    });
+    if (sesionVencida(respuesta)) return;
+
+    const datos = await respuesta.json();
+    if (!respuesta.ok) {
+      // Ej.: "Esa persona ya la eligió la otra cuenta"
+      alert(datos.error);
+      return;
+    }
+
+    autor = clave;
+    autorActual.textContent = PERSONAS[clave].nombre;
+    selector.close();
+  } catch (error) {
+    console.error("No se pudo guardar quién eres:", error);
+    alert("No se pudo conectar con el servidor.");
+  }
 }
 
 selector.querySelectorAll(".opcion").forEach(function (boton) {
@@ -347,10 +335,6 @@ selector.querySelectorAll(".opcion").forEach(function (boton) {
 // Si todavía no eligió a nadie, la ventana no se puede cerrar con Esc.
 selector.addEventListener("cancel", function (evento) {
   if (!autor) evento.preventDefault();
-});
-
-document.querySelector("#cambiar").addEventListener("click", function () {
-  selector.showModal();
 });
 
 
@@ -376,11 +360,12 @@ formulario.addEventListener("submit", async function (evento) {
 // ---------- 6. INICIO ----------
 async function arrancar() {
   // 1. ¿Hay sesión? Si no, verificarSesion ya mandó al login y aquí paramos
-  const haySesion = await verificarSesion();
-  if (!haySesion) return;
+  const yo = await verificarSesion();
+  if (!yo) return;
 
-  // 2. Preparamos el nombre de quien publica
-  if (autor) {
+  // 2. Preparamos el nombre de quien publica (viene de la cuenta)
+  if (PERSONAS[yo.autor]) {
+    autor = yo.autor;
     autorActual.textContent = PERSONAS[autor].nombre;
   }
 

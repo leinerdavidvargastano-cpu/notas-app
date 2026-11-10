@@ -62,10 +62,9 @@
     <main class="contenedor">
 
       <form id="formulario" class="formulario">
-        <!-- Quién publica: lo llena el JS según la ventana emergente -->
+        <!-- Quién publica: sale de la cuenta con la que iniciaste sesión -->
         <p class="publicando">
           Publicando como <strong id="autor-actual"></strong>
-          <button type="button" id="cambiar" class="boton-texto">Cambiar</button>
         </p>
 
         <label for="titulo">Título</label>
@@ -90,6 +89,7 @@
     <!-- Ventana emergente: <dialog> es una etiqueta nativa de HTML -->
     <dialog id="selector" class="selector">
       <h2>¿Quién eres?</h2>
+      <p class="aviso">Se elige una sola vez y queda unido a tu cuenta.</p>
       <div class="opciones">
         <!-- Fotos: pon lele.jpg y mayita.jpg en public/img/. Si no existen, se ve la inicial -->
         <button type="button" class="opcion" data-autor="lele">
