@@ -21,8 +21,7 @@
             <noscript><style>.pantalla-carga { display: none; }</style></noscript>
       </head>
 
-  <!-- data-pagina-simple: comun.js revisa la sesión y quita la pantalla de carga -->
-  <body data-pagina-simple>    
+  <body>    
     <!-- Pantalla de carga: cubre toda la página hasta confirmar la sesión -->
     <!-- role="status" y aria-live: un lector de pantalla anuncia los cambios del texto -->
     <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
@@ -81,16 +80,23 @@
       </nav>
     </header>
 
-    <main class="contenedor">
-      <!-- Tarjeta temporal: aquí irá la preguntas cuando la programemos -->
-      <section class="proximamente">
-        <p class="proximamente-emoji" aria-hidden="true">💬</p>
-        <h2>Preguntas</h2>
-        <p>Una pregunta al día para conocernos más.</p>
-        <p class="proximamente-etiqueta">Próximamente</p>
+    <main class="preguntas">
+
+      <!-- La pregunta de hoy: el JavaScript la dibuja aquí -->
+      <section aria-labelledby="titulo-hoy">
+        <h2 id="titulo-hoy" class="preguntas-titulo">Pregunta de hoy</h2>
+        <div id="pregunta-hoy"></div>
       </section>
+
+      <section aria-labelledby="titulo-historial">
+        <h2 id="titulo-historial" class="preguntas-titulo">Días anteriores</h2>
+        <div id="historial" class="historial"></div>
+        <p id="historial-vacio" class="vacio" hidden>Aquí aparecerán las preguntas de los días anteriores.</p>
+      </section>
+
     </main>
 
     <script src="comun.js"></script>
+    <script src="preguntas.js"></script>
   </body>
 </html>

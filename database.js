@@ -78,6 +78,29 @@ async function iniciarBaseDeDatos() {
     )
   `);
 
+  // Preguntas del día: qué pregunta salió cada día (una por fecha).
+  // Se guarda el texto para que, aunque cambie el banco, la pregunta de ese día no cambie.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS preguntas_dia (
+      fecha DATE PRIMARY KEY,
+      tema TEXT NOT NULL,
+      texto TEXT NOT NULL
+    )
+  `);
+
+  // Respuestas: una por persona por día. La llave (fecha, usuario_id) impide
+  // responder dos veces la misma pregunta.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS respuestas (
+      fecha DATE NOT NULL REFERENCES preguntas_dia(fecha) ON DELETE CASCADE,
+      usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      autor TEXT NOT NULL,
+      respuesta TEXT NOT NULL,
+      creado_en TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (fecha, usuario_id)
+    )
+  `);
+
   console.log("Base de datos PostgreSQL lista");
 }
 

@@ -29,7 +29,8 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
 
 ```
 ├── server.js          Rutas de la API, sesiones y servidor
-├── database.js        Conexión a PostgreSQL y creación de la tabla de notas
+├── database.js        Conexión a PostgreSQL y creación de las tablas
+├── preguntas-banco.js Banco de preguntas del día, por temas (agrega las que quieras)
 ├── package.json
 ├── .env               Variables locales (NO se sube a GitHub)
 └── public/            Lo que ve el navegador
@@ -40,7 +41,8 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
     ├── galeria.js     Lógica de la galería: subir, ver y borrar fotos
     ├── calendario.html  Calendario
     ├── calendario.js  Lógica del calendario: mes, eventos y próximos
-    ├── preguntas.html Preguntas (próximamente)
+    ├── preguntas.html Preguntas del día
+    ├── preguntas.js   Lógica de las preguntas: responder e historial
     ├── style.css      Estilos generales
     ├── login.html     Pantalla de iniciar sesión y crear cuenta
     ├── login.js       Lógica de login y registro
@@ -146,6 +148,10 @@ UPDATE usuarios SET autor = NULL WHERE email = 'correo@ejemplo.com';
 | POST | `/api/eventos` | Sí | Crea un evento (`titulo`, `fecha`, `hora`, `descripcion`, `cada_anio`) |
 | DELETE | `/api/eventos/:id` | Sí | Borra un evento, solo si lo creaste tú |
 
+| GET | `/api/preguntas/hoy` | Sí | La pregunta de hoy (la elige si aún no hay) con `mia` y `otra` |
+| GET | `/api/preguntas/historial` | Sí | Las preguntas de los últimos 60 días |
+| POST | `/api/preguntas/:fecha/respuesta` | Sí | Responde la pregunta de ese día, una sola vez (`{ "respuesta": "..." }`) |
+
 Tipos de reacción válidos: `encanta`, `gusta`, `asombra`, `divierte`, `amen`, `ramon`.
 
 ## Despliegue
@@ -170,8 +176,9 @@ Cada cambio nuevo se hace en una rama (`git checkout -b nombre`), se prueba en l
 
 - Calendario: vista del mes, eventos con hora y descripción opcionales, eventos que se repiten cada año (cuenta los años), lista de próximos eventos. Solo quien crea un evento lo borra (tabla `eventos`, se crea sola)
 
+- Preguntas del día: 184 preguntas en 16 temas (viajes, convivencia, intimidad, sexo, comida, Biblia y fe, futuro…). Sale una al azar cada día sin repetir; la respuesta de la otra persona solo se ve después de responder la tuya (lo controla el servidor). Historial de 60 días, se pueden responder las atrasadas. Tablas `preguntas_dia` y `respuestas`, se crean solas
+
 **Pendiente (del plan original)**
 
-- Preguntas del día: cada persona no ve la respuesta de la otra hasta responder la suya
 - Recordatorios del calendario por correo (y después WhatsApp) usando n8n
 - Código de verificación por correo y cambio de contraseña

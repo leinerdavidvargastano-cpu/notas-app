@@ -1,6 +1,7 @@
 // Traemos Express y la conexión a la base de datos.
 const express = require("express");
 const { pool, iniciarBaseDeDatos } = require("./database");
+const { PREGUNTAS } = require("./preguntas-banco");
 
 // bcryptjs: la herramienta que convierte una contraseña en un texto cifrado
 const bcrypt = require("bcryptjs");
@@ -691,6 +692,146 @@ app.delete("/api/eventos/:id", requiereSesion, async function (req, res) {
   } catch (error) {
     console.error("Error al borrar el evento:", error);
     res.status(500).json({ error: "No se pudo borrar el evento" });
+  }
+});
+
+
+// ---------- PREGUNTAS DEL DÍA ----------
+
+// La fecha de HOY en Colombia, como "2026-11-10".
+// "en-CA" es un formato que escribe las fechas como AAAA-MM-DD.
+function hoyEnColombia() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" });
+}
+
+// Busca la pregunta de una fecha. Si es hoy y todavía no hay, elige una nueva.
+async function preguntaDeLaFecha(fecha, crearSiFalta) {
+  const buscar = "SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, tema, texto FROM preguntas_dia WHERE fecha = $1";
+  let resultado = await pool.query(buscar, [fecha]);
+  if (resultado.rows.length > 0 || !crearSiFalta) return resultado.rows[0] || null;
+
+  // Elegimos al azar entre las que NO han salido. Un Set busca más rápido que una lista.
+  const usadas = await pool.query("SELECT texto FROM preguntas_dia");
+  const yaSalieron = new Set(usadas.rows.map(function (fila) { return fila.texto; }));
+  let opciones = PREGUNTAS.filter(function (p) { return !yaSalieron.has(p.texto); });
+  if (opciones.length === 0) opciones = PREGUNTAS;   // ya salieron todas: volvemos a empezar
+
+  const elegida = opciones[Math.floor(Math.random() * opciones.length)];
+
+  // ON CONFLICT DO NOTHING: si las dos personas entran al mismo tiempo, solo se
+  // guarda la primera pregunta y los dos ven la misma.
+  await pool.query(
+    "INSERT INTO preguntas_dia (fecha, tema, texto) VALUES ($1, $2, $3) ON CONFLICT (fecha) DO NOTHING",
+    [fecha, elegida.tema, elegida.texto]
+  );
+  resultado = await pool.query(buscar, [fecha]);
+  return resultado.rows[0];
+}
+
+// Arma lo que ve una persona de una pregunta, aplicando LA REGLA:
+// la respuesta de la otra persona solo se manda si YA respondiste.
+function armarPregunta(pregunta, respuestasDelDia, usuarioId) {
+  const mia = respuestasDelDia.find(function (r) { return r.usuario_id === usuarioId; });
+  const otra = respuestasDelDia.find(function (r) { return r.usuario_id !== usuarioId; });
+
+  return {
+    fecha: pregunta.fecha,
+    tema: pregunta.tema,
+    texto: pregunta.texto,
+    mia: mia ? { autor: mia.autor, respuesta: mia.respuesta } : null,
+    // Si la otra persona respondió: siempre decimos QUIÉN, pero el texto solo si ya respondiste
+    otra: otra ? { autor: otra.autor, respuesta: mia ? otra.respuesta : null } : null,
+  };
+}
+
+async function respuestasDe(fechas) {
+  // ANY($1): "la fecha está en esta lista"
+  const resultado = await pool.query(
+    "SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, usuario_id, autor, respuesta FROM respuestas WHERE fecha = ANY($1::date[])",
+    [fechas]
+  );
+  return resultado.rows;
+}
+
+// PREGUNTA DE HOY: GET /api/preguntas/hoy
+app.get("/api/preguntas/hoy", requiereSesion, async function (req, res) {
+  try {
+    const pregunta = await preguntaDeLaFecha(hoyEnColombia(), true);
+    const respuestas = await respuestasDe([pregunta.fecha]);
+    res.json(armarPregunta(pregunta, respuestas, req.session.usuarioId));
+  } catch (error) {
+    console.error("Error al leer la pregunta de hoy:", error);
+    res.status(500).json({ error: "No se pudo leer la pregunta de hoy" });
+  }
+});
+
+// HISTORIAL: GET /api/preguntas/historial   (los últimos 60 días, sin hoy)
+app.get("/api/preguntas/historial", requiereSesion, async function (req, res) {
+  try {
+    const preguntas = await pool.query(
+      `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, tema, texto
+         FROM preguntas_dia
+        WHERE fecha < $1
+        ORDER BY fecha DESC
+        LIMIT 60`,
+      [hoyEnColombia()]
+    );
+    const fechas = preguntas.rows.map(function (p) { return p.fecha; });
+    const respuestas = await respuestasDe(fechas);
+
+    res.json(preguntas.rows.map(function (pregunta) {
+      const delDia = respuestas.filter(function (r) { return r.fecha === pregunta.fecha; });
+      return armarPregunta(pregunta, delDia, req.session.usuarioId);
+    }));
+  } catch (error) {
+    console.error("Error al leer el historial:", error);
+    res.status(500).json({ error: "No se pudo leer el historial" });
+  }
+});
+
+// RESPONDER: POST /api/preguntas/2026-11-10/respuesta   con { "respuesta": "..." }
+// Sirve para hoy y para días anteriores que no respondiste.
+app.post("/api/preguntas/:fecha/respuesta", requiereSesion, async function (req, res) {
+  const fecha = req.params.fecha;
+  const respuesta = (req.body.respuesta || "").trim();
+
+  if (!fechaValida(fecha) || fecha > hoyEnColombia()) {
+    return res.status(400).json({ error: "La fecha no es válida" });
+  }
+  if (respuesta === "") {
+    return res.status(400).json({ error: "Escribe tu respuesta" });
+  }
+  if (respuesta.length > 1000) {
+    return res.status(400).json({ error: "La respuesta es demasiado larga" });
+  }
+
+  try {
+    const autor = await autorDeLaSesion(req);
+    if (!autor) {
+      return res.status(400).json({ error: "Primero elige quién eres en Inicio" });
+    }
+
+    // Solo se puede responder una pregunta que de verdad salió ese día
+    const pregunta = await preguntaDeLaFecha(fecha, false);
+    if (!pregunta) {
+      return res.status(404).json({ error: "Ese día no hubo pregunta" });
+    }
+
+    await pool.query(
+      "INSERT INTO respuestas (fecha, usuario_id, autor, respuesta) VALUES ($1, $2, $3, $4)",
+      [fecha, req.session.usuarioId, autor, respuesta]
+    );
+
+    // Devolvemos la pregunta completa: ahora ya puede ver la respuesta de la otra persona
+    const respuestas = await respuestasDe([fecha]);
+    res.status(201).json(armarPregunta(pregunta, respuestas, req.session.usuarioId));
+  } catch (error) {
+    // 23505: ya existe (fecha, usuario_id) → ya habías respondido
+    if (error.code === "23505") {
+      return res.status(409).json({ error: "Ya respondiste esta pregunta" });
+    }
+    console.error("Error al guardar la respuesta:", error);
+    res.status(500).json({ error: "No se pudo guardar la respuesta" });
   }
 });
 

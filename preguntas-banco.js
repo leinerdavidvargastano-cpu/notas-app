@@ -1,0 +1,248 @@
+// ---------- BANCO DE PREGUNTAS DEL DÍA ----------
+// Cada día el servidor elige al azar una pregunta que todavía no haya salido.
+// Para agregar preguntas: escríbelas en el tema que quieras (o crea un tema nuevo).
+// No hace falta tocar nada más.
+
+const TEMAS = {
+  "Viajes": [
+    "Si mañana pudiéramos viajar a cualquier lugar del mundo, ¿a dónde iríamos y por qué?",
+    "¿Cuál ha sido el mejor viaje de tu vida hasta ahora?",
+    "¿Prefieres playa, montaña o ciudad para unas vacaciones juntos?",
+    "¿Qué lugar de Colombia te gustaría que conociéramos juntos?",
+    "¿Cómo sería para ti el viaje de luna de miel perfecto?",
+    "¿Qué país te da curiosidad por su comida?",
+    "¿Te animarías a un viaje de mochileros, sin hoteles de lujo?",
+    "¿Qué es lo primero que empacas cuando te vas de viaje?",
+    "¿Qué ciudad te gustaría visitar en Navidad?",
+    "¿Viaje planeado al detalle o improvisado sobre la marcha?",
+    "Si pudiéramos vivir un año en otro país, ¿cuál elegirías?",
+    "¿Qué aventura te gustaría vivir en un viaje (bucear, parapente, safari…)?",
+  ],
+
+  "Convivencia": [
+    "¿Qué tarea de la casa te gusta hacer y cuál odias?",
+    "¿Cómo te imaginas nuestra primera casa?",
+    "¿Eres más de orden extremo o de 'caos organizado'?",
+    "¿Cómo te gustaría que repartiéramos las tareas de la casa?",
+    "¿Qué costumbre mía crees que te costaría aguantar viviendo juntos?",
+    "¿Cómo sería un domingo perfecto en casa juntos?",
+    "¿Te gustaría tener mascotas? ¿Cuáles?",
+    "¿Qué necesitas para sentir que un lugar es 'tu hogar'?",
+    "¿Cuánto tiempo a solas necesitas en el día para estar bien?",
+    "¿Cómo te gusta decorar: minimalista, colorido, con plantas…?",
+    "¿Qué harías si tenemos una discusión justo antes de dormir?",
+    "¿Qué regla de la casa crees que sería importante para nosotros?",
+  ],
+
+  "Intimidad": [
+    "¿En qué momento te has sentido más cerca de mí?",
+    "¿Qué gesto pequeño mío te hace sentir amado/a?",
+    "¿Cuál es tu lenguaje del amor: palabras, tiempo, regalos, servicio o contacto físico?",
+    "¿Qué te cuesta decirme y te gustaría poder decirme más fácil?",
+    "¿Qué es lo que más te gusta de cómo te miro?",
+    "¿Hay algo de ti que todavía no conozco y te gustaría contarme?",
+    "¿Cómo te gusta que te consuele cuando estás triste?",
+    "¿Qué te hace sentir seguro/a en nuestra relación?",
+    "¿Cuál es tu forma favorita de pasar tiempo a solas conmigo?",
+    "¿Qué abrazo mío recuerdas con más cariño?",
+    "¿Qué miedo tienes sobre nosotros que nunca me has dicho?",
+    "¿Qué te gustaría que hiciéramos más seguido como pareja?",
+  ],
+
+  "Sexo": [
+    "¿Qué es lo que más te atrae de mí físicamente?",
+    "¿Cómo sería para ti una noche romántica perfecta?",
+    "¿Qué te hace sentir deseado/a?",
+    "¿Hay algo que te gustaría probar juntos alguna vez?",
+    "¿Prefieres la mañana o la noche para los momentos íntimos?",
+    "¿Qué canción pondrías para una noche especial?",
+    "¿Qué parte de los besos te gusta más?",
+    "¿Qué tan importante es para ti hablar abiertamente de sexo en pareja?",
+    "¿Qué recuerdo íntimo nuestro te hace sonreír?",
+    "¿Qué ambiente te pone de buen humor: velas, música, luces bajas…?",
+    "¿Qué te gustaría que te dijera al oído?",
+    "¿Qué límite es importante para ti que yo siempre respete?",
+  ],
+
+  "Comida": [
+    "¿Cuál es tu comida favorita de toda la vida?",
+    "¿Qué plato te gustaría que cocináramos juntos?",
+    "Si solo pudieras comer una comida por un año, ¿cuál sería?",
+    "¿Dulce o salado?",
+    "¿Qué comida no te comerías ni por todo el dinero del mundo?",
+    "¿Cuál es el mejor restaurante al que has ido?",
+    "¿Qué receta de tu familia te gustaría que aprendiera?",
+    "¿Desayuno típico colombiano o desayuno americano?",
+    "¿Qué antojo te da a medianoche?",
+    "¿Qué comida te recuerda a tu infancia?",
+    "¿Qué comida de otro país te gustaría probar?",
+    "¿Pizza con piña: sí o no? Defiende tu respuesta.",
+  ],
+
+  "Biblia y fe": [
+    "¿Cuál es tu versículo favorito y por qué?",
+    "¿Qué personaje de la Biblia admiras más?",
+    "¿En qué momento de tu vida has sentido a Dios más cerca?",
+    "¿Cómo te gustaría que oráramos juntos?",
+    "¿Qué historia de la Biblia te enseñó algo importante?",
+    "¿Qué significa para ti tener una relación con Dios en el centro?",
+    "¿Por qué cosa le das gracias a Dios hoy?",
+    "¿Qué pasaje de la Biblia te gustaría que leyéramos juntos esta semana?",
+    "¿Cómo nos ayuda la fe cuando tenemos problemas?",
+    "¿Qué te gustaría pedirle a Dios para nuestra relación?",
+    "¿Cuál es tu salmo favorito?",
+    "¿Qué enseñanza de Jesús intentas vivir cada día?",
+    "¿Cómo te imaginas que sería servir juntos en la iglesia?",
+  ],
+
+  "Futuro": [
+    "¿Cómo te imaginas nuestra vida dentro de 10 años?",
+    "¿Te gustaría tener hijos? ¿Cuántos?",
+    "¿Qué nombres te gustan para un hijo o una hija?",
+    "¿En qué ciudad te gustaría que viviéramos?",
+    "¿Cómo te imaginas nuestra boda?",
+    "¿Qué meta te gustaría que cumpliéramos juntos este año?",
+    "¿Cómo te imaginas cuando seamos viejitos?",
+    "¿Qué tradición te gustaría que creáramos como familia?",
+    "¿Qué te gustaría haber logrado a los 30 años?",
+    "¿Qué tipo de padres crees que seríamos?",
+    "¿Qué proyecto te gustaría que empezáramos juntos?",
+    "¿Qué es lo que más te emociona de nuestro futuro?",
+  ],
+
+  "Recuerdos": [
+    "¿Qué pensaste de mí la primera vez que me viste?",
+    "¿Cuál es tu recuerdo favorito conmigo?",
+    "¿En qué momento supiste que te gustaba?",
+    "¿Cuál ha sido nuestra cita más divertida?",
+    "¿Qué momento nuestro te gustaría volver a vivir?",
+    "¿Qué recuerdas de nuestra primera conversación?",
+    "¿Cuál es el regalo mío que más te ha gustado?",
+    "¿Qué día juntos te hizo reír más?",
+    "¿Qué recuerdo de tu infancia te hace feliz?",
+    "¿Qué foto nuestra es tu favorita y por qué?",
+    "¿Cuál fue el momento más difícil que superamos juntos?",
+    "¿Qué canción te recuerda a nosotros?",
+  ],
+
+  "Familia": [
+    "¿Qué aprendiste de tus papás que quieres repetir?",
+    "¿Qué cosa de tu familia NO te gustaría repetir?",
+    "¿Cuál es la tradición familiar que más te gusta?",
+    "¿Con quién de tu familia tienes más confianza?",
+    "¿Cómo te gustaría que pasáramos la Navidad?",
+    "¿Qué tan seguido te gustaría visitar a nuestras familias?",
+    "¿Qué historia de tu familia me has contado poco?",
+    "¿Qué te gustaría que mi familia supiera de ti?",
+    "¿Qué valor de tu familia es el más importante para ti?",
+    "¿Cómo eras de niño/a según tu mamá?",
+    "¿Qué abuelo o abuela te marcó más y por qué?",
+  ],
+
+  "Dinero": [
+    "¿Eres más ahorrador/a o gastador/a?",
+    "¿Cómo te gustaría que manejáramos el dinero como pareja?",
+    "¿Qué harías si te ganaras la lotería?",
+    "¿En qué vale la pena gastar dinero y en qué no?",
+    "¿Qué compra grande te gustaría que hiciéramos juntos?",
+    "¿Qué aprendiste del dinero en tu casa?",
+    "¿Cuenta conjunta, separada o las dos?",
+    "¿Qué te gustaría tener ahorrado en 5 años?",
+    "¿Cuál es el mejor dinero que has gastado en tu vida?",
+    "¿Te gustaría tener un negocio propio algún día? ¿De qué?",
+  ],
+
+  "Sueños y metas": [
+    "¿Cuál es tu sueño más grande?",
+    "¿Qué te gustaría aprender este año?",
+    "¿Qué trabajo harías si el dinero no importara?",
+    "¿Qué miedo te gustaría superar?",
+    "¿Qué logro tuyo te hace sentir más orgulloso/a?",
+    "¿Cómo te puedo ayudar a cumplir tus metas?",
+    "¿Qué te gustaría que la gente recordara de ti?",
+    "¿Qué hábito te gustaría empezar?",
+    "¿Qué harías si supieras que no puedes fallar?",
+    "¿Qué te inspira a seguir adelante en los días difíciles?",
+  ],
+
+  "Gustos": [
+    "¿Cuál es tu película favorita de todos los tiempos?",
+    "¿Qué serie te gustaría que viéramos juntos?",
+    "¿Qué canción no puedes dejar de escuchar últimamente?",
+    "¿Cuál es tu color favorito y por qué?",
+    "¿Qué olor te pone de buen humor?",
+    "¿Libro, película o serie?",
+    "¿Qué artista o cantante te gustaría ver en concierto conmigo?",
+    "¿Cuál es tu estación del año favorita?",
+    "¿Qué deporte te gusta ver o practicar?",
+    "¿Qué videojuego o juego de mesa te gustaría jugar conmigo?",
+    "¿Café, té o chocolate?",
+    "¿Qué flor te gusta más?",
+  ],
+
+  "Divertidas": [
+    "Si fuéramos personajes de una película, ¿cuál sería?",
+    "¿Qué animal crees que sería yo y por qué?",
+    "¿Qué superpoder te gustaría tener?",
+    "¿Cuál es la cosa más vergonzosa que te ha pasado?",
+    "Si tuviéramos un programa de televisión, ¿cómo se llamaría?",
+    "¿Qué canción cantarías en un karaoke conmigo?",
+    "¿Qué apodo nuevo me pondrías?",
+    "¿Cuál es tu chiste malo favorito?",
+    "Si pudieras cambiar de vida conmigo por un día, ¿qué harías?",
+    "¿Qué emoji me describe mejor?",
+    "¿Cuál es la cosa más rara que te gusta comer?",
+    "Si fueras invisible por un día, ¿qué harías?",
+  ],
+
+  "¿Qué harías si…?": [
+    "¿Qué harías si tuviéramos un día entero sin celulares?",
+    "¿Qué harías si pudieras volver 5 años atrás?",
+    "¿Qué harías si nos quedáramos atrapados en una isla desierta?",
+    "¿Qué harías si te dieran un millón de pesos y solo una hora para gastarlo?",
+    "¿Qué harías si un día me despertara sin memoria?",
+    "¿Qué harías si te ofrecieran el trabajo de tus sueños en otro país?",
+    "¿Qué harías si pudiéramos tener una cita con cualquier persona famosa?",
+    "¿Qué harías si pudieras hablar con tu yo de niño/a?",
+    "¿Qué harías si nos ganáramos un viaje sorpresa mañana?",
+    "¿Qué harías si tuvieras que vivir sin música?",
+  ],
+
+  "Amor y relación": [
+    "¿Qué es lo que más admiras de mí?",
+    "¿Qué crees que nos hace un buen equipo?",
+    "¿Cómo podemos resolver mejor nuestras discusiones?",
+    "¿Qué necesitas de mí cuando estás estresado/a?",
+    "¿Qué significa para ti el compromiso?",
+    "¿Qué tres palabras describen nuestra relación?",
+    "¿Qué crees que te enseñé sin darme cuenta?",
+    "¿Qué te gustaría que nunca cambiara entre nosotros?",
+    "¿Cómo te gusta celebrar nuestros aniversarios?",
+    "¿Qué detalle te gustaría recibir sin ninguna razón?",
+    "¿Qué te hace sentir orgulloso/a de nosotros?",
+    "¿Qué te gustaría que hiciera más seguido por ti?",
+  ],
+
+  "Crecimiento personal": [
+    "¿Qué cosa de ti te gustaría mejorar este año?",
+    "¿Qué error te enseñó algo importante?",
+    "¿Qué te da paz cuando estás ansioso/a?",
+    "¿Qué consejo le darías a alguien que empieza una relación?",
+    "¿De qué te arrepientes y cómo lo superaste?",
+    "¿Qué persona ha influido más en quién eres hoy?",
+    "¿Qué te hace perder la paciencia y cómo lo manejas?",
+    "¿Qué cualidad tuya crees que la gente no valora lo suficiente?",
+    "¿Qué te gustaría perdonarte a ti mismo/a?",
+    "¿Qué hiciste esta semana que te hizo sentir bien contigo?",
+  ],
+};
+
+// Convertimos el objeto en una lista plana: [{ tema, texto }, ...]
+// Object.entries da pares [tema, preguntas] y flatMap los aplana en una sola lista.
+const PREGUNTAS = Object.entries(TEMAS).flatMap(function ([tema, preguntas]) {
+  return preguntas.map(function (texto) {
+    return { tema: tema, texto: texto };
+  });
+});
+
+module.exports = { PREGUNTAS };
