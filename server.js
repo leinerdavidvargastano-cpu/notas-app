@@ -10,8 +10,20 @@ const session = require("express-session");
 // connect-pg-simple: guarda las sesiones en PostgreSQL (tu base de Neon)
 const PgSession = require("connect-pg-simple")(session);
 
+// express-rate-limit: limita cuántas veces se puede intentar algo (anti fuerza bruta)
+const rateLimit = require("express-rate-limit");
+
 const app = express();
 const PUERTO = process.env.PORT || 3000;
+
+// ---------- SEGURIDAD: CLAVE DE SESIÓN OBLIGATORIA ----------
+// En producción (Render) NO dejamos arrancar el servidor sin SESSION_SECRET.
+// Si usáramos la clave de prueba, cualquiera podría falsificar cookies.
+const ES_PRODUCCION = process.env.NODE_ENV === "production";
+if (ES_PRODUCCION && !process.env.SESSION_SECRET) {
+  console.error("Falta la variable SESSION_SECRET. Configúrala en Render.");
+  process.exit(1);
+}
 
 app.use(express.json());
 
@@ -35,11 +47,41 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 30, // dura 30 días (en milisegundos)
     httpOnly: true,                   // el JavaScript de la página no puede leerla
     sameSite: "lax",                  // protege contra envíos desde otras páginas
-    secure: process.env.NODE_ENV === "production" // solo por HTTPS al publicar
+    secure: ES_PRODUCCION // solo por HTTPS al publicar
   }
 }));
 
+// ---------- FOTOS PRIVADAS ----------
+// Estas fotos solo se ven con sesión. Sin esto, cualquiera que adivine
+// la dirección (ej. /img/nosotros.png) las vería sin iniciar sesión.
+// Va ANTES de express.static para revisar la sesión primero.
+const FOTOS_PRIVADAS = [
+  "/img/lele.jpg",
+  "/img/mayita.jpg",
+  "/img/nosotros.png",
+  "/img/ella.png",
+  "/img/leinertano.png",
+];
+
+app.use(function (req, res, next) {
+  if (FOTOS_PRIVADAS.includes(req.path) && !req.session.usuarioId) {
+    return res.status(401).end();
+  }
+  next();
+});
+
 app.use(express.static("public"));
+
+// ---------- LÍMITE DE INTENTOS ----------
+// Máximo 10 intentos cada 15 minutos por dirección IP en login y registro.
+// Así nadie puede probar miles de contraseñas seguidas.
+const limiteIntentos = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos en milisegundos
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Demasiados intentos. Espera 15 minutos y vuelve a intentar." },
+});
 
 // ---------- PORTERO: EXIGE SESIÓN ----------
 // Un middleware recibe req, res y next.
@@ -222,12 +264,18 @@ app.post("/api/notas/:id/reacciones", requiereSesion, async function (req, res) 
 // Cuántas personas pueden registrarse en total (Lele y Mayita)
 const MAX_USUARIOS = 2;
 
-app.post("/api/registro", async function (req, res) {
+// Largo mínimo de la contraseña
+const MIN_PASSWORD = 8;
+
+app.post("/api/registro", limiteIntentos, async function (req, res) {
   const email = (req.body.email || "").trim().toLowerCase();
   const password = req.body.password || "";
 
   if (email === "" || password === "") {
     return res.status(400).json({ error: "El correo y la contraseña son obligatorios" });
+  }
+  if (password.length < MIN_PASSWORD) {
+    return res.status(400).json({ error: "La contraseña debe tener mínimo " + MIN_PASSWORD + " caracteres" });
   }
 
   try {
@@ -265,7 +313,7 @@ app.post("/api/registro", async function (req, res) {
 
 // ---------- INICIAR SESIÓN ----------
 // POST /api/login
-app.post("/api/login", async function (req, res) {
+app.post("/api/login", limiteIntentos, async function (req, res) {
   const email = (req.body.email || "").trim().toLowerCase();
   const password = req.body.password || "";
 
@@ -302,9 +350,17 @@ app.post("/api/login", async function (req, res) {
     // 4. Todo bien: guardamos el id del usuario dentro de la sesión.
     // express-session crea la fila en la tabla "session" y le manda
     // la cookie al navegador automáticamente.
-    req.session.usuarioId = usuario.id;
-
-    res.json({ ok: true, email: usuario.email });
+    // regenerate crea una sesión NUEVA (con id nuevo) antes de guardar el usuario.
+    // Evita que alguien te "preste" una cookie vieja y luego la use contigo dentro
+    // (ataque llamado "fijación de sesión").
+    req.session.regenerate(function (error) {
+      if (error) {
+        console.error("Error al crear la sesión:", error);
+        return res.status(500).json({ error: "No se pudo iniciar sesión" });
+      }
+      req.session.usuarioId = usuario.id;
+      res.json({ ok: true, email: usuario.email });
+    });
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
     res.status(500).json({ error: "No se pudo iniciar sesión" });

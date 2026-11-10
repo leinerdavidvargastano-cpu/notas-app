@@ -11,6 +11,7 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
 - **Recuerdos**: crear, leer y eliminar, con una ventana de confirmación antes de borrar.
 - **Reacciones** por recuerdo, varias por persona: me encanta, me gusta, me asombra, me divierte, amén y Ramón. Cada persona puede poner o quitar las suyas, y se muestra un contador y el texto de lo que reaccionó.
 - **Rutas protegidas**: sin sesión, el servidor responde 401 y la página manda a `login.html`.
+- **Seguridad**: máximo 10 intentos de login/registro cada 15 min por IP, contraseña de mínimo 8 caracteres, fotos personales solo con sesión (`FOTOS_PRIVADAS` en `server.js`) y el servidor no arranca en producción sin `SESSION_SECRET`.
 
 ## Tecnologías
 
@@ -20,6 +21,7 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
 | Base de datos | PostgreSQL (Neon), con la librería `pg` |
 | Contraseñas | `bcryptjs` (se guarda solo el hash) |
 | Sesiones | `express-session` + `connect-pg-simple` |
+| Límite de intentos | `express-rate-limit` |
 | Frontend | HTML, CSS y JavaScript sin frameworks |
 | Publicación | Render |
 
