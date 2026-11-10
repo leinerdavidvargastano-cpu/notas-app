@@ -25,7 +25,16 @@ if (ES_PRODUCCION && !process.env.SESSION_SECRET) {
   process.exit(1);
 }
 
-app.use(express.json());
+// Lee el cuerpo JSON de las peticiones (máximo 100 KB, lo normal).
+// La ruta de subir fotos se salta este lector: usa uno propio, más grande,
+// y solo DESPUÉS de revisar la sesión (así nadie sin cuenta manda archivos pesados).
+const leerJson = express.json();
+const leerJsonFotos = express.json({ limit: "5mb" });
+
+app.use(function (req, res, next) {
+  if (req.method === "POST" && req.path === "/api/fotos") return next();
+  leerJson(req, res, next);
+});
 
 // Render pone un intermediario delante de tu servidor; esto le dice a Express
 // que confíe en él. Sin esto, la cookie segura no funcionaría al publicarla.
@@ -441,6 +450,154 @@ app.post("/api/yo/autor", requiereSesion, async function (req, res) {
     }
     console.error("Error al elegir autor:", error);
     res.status(500).json({ error: "No se pudo guardar quién eres" });
+  }
+});
+
+
+// ---------- GALERÍA DE FOTOS ----------
+
+// Límites de tamaño (en bytes). La página achica las fotos antes de subirlas,
+// así que normalmente pesan mucho menos que esto.
+const MAX_IMAGEN = 3 * 1024 * 1024;   // 3 MB
+const MAX_MINIATURA = 400 * 1024;     // 400 KB
+
+// Convierte "data:image/jpeg;base64,/9j/4AA..." en bytes (un Buffer).
+// Devuelve null si no es una imagen JPEG válida.
+function leerJpeg(dataUrl) {
+  const prefijo = "data:image/jpeg;base64,";
+  if (typeof dataUrl !== "string" || !dataUrl.startsWith(prefijo)) return null;
+
+  const bytes = Buffer.from(dataUrl.slice(prefijo.length), "base64");
+  // Todo archivo JPEG empieza con los bytes FF D8 FF ("número mágico").
+  // Así revisamos que de verdad sea una foto y no otra cosa disfrazada.
+  if (bytes.length < 3 || bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) return null;
+  return bytes;
+}
+
+// Revisa que la fecha tenga la forma AAAA-MM-DD y que exista de verdad.
+function fechaValida(texto) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) return false;
+  const fecha = new Date(texto + "T00:00:00Z");
+  return !isNaN(fecha) && fecha.toISOString().slice(0, 10) === texto;
+}
+
+// LISTA DE FOTOS: GET /api/fotos
+// Solo manda los datos (texto), NO las imágenes: esas se piden aparte.
+app.get("/api/fotos", requiereSesion, async function (req, res) {
+  try {
+    // to_char convierte la fecha en texto "2026-11-10". Si la mandáramos como
+    // fecha, JavaScript le aplicaría la zona horaria y podría salir el día anterior.
+    // NULLS LAST: las fotos sin fecha van al final.
+    const resultado = await pool.query(
+      `SELECT id, autor, descripcion, lugar,
+              to_char(fecha, 'YYYY-MM-DD') AS fecha,
+              usuario_id = $1 AS mia
+         FROM fotos
+        ORDER BY fecha DESC NULLS LAST, id DESC`,
+      [req.session.usuarioId]
+    );
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error("Error al leer las fotos:", error);
+    res.status(500).json({ error: "No se pudieron leer las fotos" });
+  }
+});
+
+// UNA IMAGEN: GET /api/fotos/5/miniatura   o   GET /api/fotos/5/imagen
+app.get("/api/fotos/:id/:version", requiereSesion, async function (req, res) {
+  const id = Number(req.params.id);
+  // Lista blanca: el nombre de la columna NO puede venir directo del navegador
+  // (sería una inyección SQL). Solo aceptamos estas dos.
+  const columnas = { miniatura: "miniatura", imagen: "imagen" };
+  const columna = columnas[req.params.version];
+
+  if (!Number.isInteger(id) || !columna) {
+    return res.status(404).end();
+  }
+
+  try {
+    const resultado = await pool.query(`SELECT ${columna} AS bytes FROM fotos WHERE id = $1`, [id]);
+    if (resultado.rows.length === 0) return res.status(404).end();
+
+    res.set("Content-Type", "image/jpeg");
+    // Una foto nunca cambia: el navegador puede guardarla 1 año.
+    // "private": solo el navegador de la persona, nunca un servidor intermedio.
+    res.set("Cache-Control", "private, max-age=31536000, immutable");
+    res.send(resultado.rows[0].bytes);
+  } catch (error) {
+    console.error("Error al leer la imagen:", error);
+    res.status(500).end();
+  }
+});
+
+// SUBIR UNA FOTO: POST /api/fotos
+// Cuerpo: { imagen, miniatura, descripcion, lugar, fecha }
+// imagen y miniatura llegan como texto "data:image/jpeg;base64,..."
+app.post("/api/fotos", requiereSesion, leerJsonFotos, async function (req, res) {
+  const imagen = leerJpeg(req.body.imagen);
+  const miniatura = leerJpeg(req.body.miniatura);
+  const descripcion = (req.body.descripcion || "").trim();
+  const lugar = (req.body.lugar || "").trim();
+  const fecha = (req.body.fecha || "").trim();
+
+  if (!imagen || !miniatura) {
+    return res.status(400).json({ error: "La foto no es válida" });
+  }
+  if (imagen.length > MAX_IMAGEN || miniatura.length > MAX_MINIATURA) {
+    return res.status(400).json({ error: "La foto es demasiado pesada" });
+  }
+  if (descripcion.length > 500) {
+    return res.status(400).json({ error: "La descripción es demasiado larga" });
+  }
+  if (lugar.length > 100) {
+    return res.status(400).json({ error: "El lugar es demasiado largo" });
+  }
+  if (fecha !== "" && !fechaValida(fecha)) {
+    return res.status(400).json({ error: "La fecha no es válida" });
+  }
+
+  try {
+    // El autor sale de la cuenta, igual que en los recuerdos
+    const autor = await autorDeLaSesion(req);
+    if (!autor) {
+      return res.status(400).json({ error: "Primero elige quién eres en Inicio" });
+    }
+
+    // "|| null": si el campo quedó vacío, se guarda como NULL (sin dato)
+    const resultado = await pool.query(
+      `INSERT INTO fotos (usuario_id, autor, imagen, miniatura, descripcion, lugar, fecha)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id`,
+      [req.session.usuarioId, autor, imagen, miniatura, descripcion || null, lugar || null, fecha || null]
+    );
+    res.status(201).json({ id: resultado.rows[0].id });
+  } catch (error) {
+    console.error("Error al guardar la foto:", error);
+    res.status(500).json({ error: "No se pudo guardar la foto" });
+  }
+});
+
+// BORRAR UNA FOTO: DELETE /api/fotos/5
+// "AND usuario_id = $2": solo se borra si la subiste tú.
+app.delete("/api/fotos/:id", requiereSesion, async function (req, res) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "La foto no es válida" });
+  }
+
+  try {
+    const resultado = await pool.query(
+      "DELETE FROM fotos WHERE id = $1 AND usuario_id = $2",
+      [id, req.session.usuarioId]
+    );
+    // 0 filas borradas: la foto no existe o es de la otra persona
+    if (resultado.rowCount === 0) {
+      return res.status(403).json({ error: "Solo quien subió la foto puede borrarla" });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error al borrar la foto:", error);
+    res.status(500).json({ error: "No se pudo borrar la foto" });
   }
 });
 

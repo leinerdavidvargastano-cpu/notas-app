@@ -1,10 +1,10 @@
 // ---------- SERVICE WORKER DE MAYLEN ----------
 // Guarda en el teléfono los archivos de la página (no los datos) para que abra rápido
 // y no se quede en blanco si falla la conexión.
-const CACHE = "maylen-v2";
+const CACHE = "maylen-v3";
 
 // Los archivos básicos que se guardan al instalar
-const BASE = ["/", "/login.html", "/style.css", "/login.css", "/script.js", "/comun.js", "/login.js", "/img/logo.png"];
+const BASE = ["/", "/login.html", "/style.css", "/login.css", "/script.js", "/comun.js", "/galeria.js", "/login.js", "/img/logo.png"];
 
 // INSTALAR: se ejecuta una sola vez, cuando el navegador descubre este archivo
 self.addEventListener("install", function (evento) {

@@ -43,6 +43,25 @@ async function iniciarBaseDeDatos() {
       ADD COLUMN IF NOT EXISTS autor TEXT UNIQUE
   `);
 
+  // Galería: las fotos se guardan DENTRO de la base de datos (columna BYTEA =
+  // bytes). Render borra su disco al reiniciarse, así que ahí no sirven.
+  // Guardamos dos versiones: "imagen" (grande, para verla completa) y
+  // "miniatura" (pequeña, para la cuadrícula; carga mucho más rápido).
+  // usuario_id: quién la subió, para que solo esa persona pueda borrarla.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fotos (
+      id SERIAL PRIMARY KEY,
+      usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+      autor TEXT NOT NULL,
+      imagen BYTEA NOT NULL,
+      miniatura BYTEA NOT NULL,
+      descripcion TEXT,
+      lugar TEXT,
+      fecha DATE,
+      creado_en TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   console.log("Base de datos PostgreSQL lista");
 }
 

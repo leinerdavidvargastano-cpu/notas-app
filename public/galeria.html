@@ -21,8 +21,7 @@
             <noscript><style>.pantalla-carga { display: none; }</style></noscript>
       </head>
 
-  <!-- data-pagina-simple: comun.js revisa la sesión y quita la pantalla de carga -->
-  <body data-pagina-simple>    
+  <body>    
     <!-- Pantalla de carga: cubre toda la página hasta confirmar la sesión -->
     <!-- role="status" y aria-live: un lector de pantalla anuncia los cambios del texto -->
     <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
@@ -81,16 +80,64 @@
       </nav>
     </header>
 
-    <main class="contenedor">
-      <!-- Tarjeta temporal: aquí irá la galería cuando la programemos -->
-      <section class="proximamente">
-        <p class="proximamente-emoji" aria-hidden="true">📷</p>
-        <h2>Galería</h2>
-        <p>Nuestras fotos, con la historia de cada una.</p>
-        <p class="proximamente-etiqueta">Próximamente</p>
-      </section>
+    <main class="galeria">
+
+      <div class="galeria-cabecera">
+        <div>
+          <h2>Galería</h2>
+          <p>Nuestras fotos, con la historia de cada una.</p>
+        </div>
+        <button type="button" id="abrir-subir" class="boton-subir">+ Subir foto</button>
+      </div>
+
+      <!-- Aquí el JavaScript pone una tarjeta por cada foto -->
+      <ul id="fotos" class="fotos"></ul>
+      <p id="fotos-vacio" class="vacio" hidden>Todavía no hay fotos. Sube la primera.</p>
     </main>
 
+    <!-- VENTANA PARA SUBIR UNA FOTO -->
+    <dialog id="ventana-subir" class="selector ventana-foto">
+      <form id="form-foto" class="form-foto">
+        <h2>Subir foto</h2>
+
+        <!-- Vista previa: se llena al elegir la foto -->
+        <label class="elegir-foto" for="archivo">
+          <img id="vista-previa" alt="" hidden />
+          <span id="elegir-texto">Toca para elegir una foto</span>
+        </label>
+        <!-- accept="image/*": solo deja elegir imágenes (en el celular abre galería o cámara) -->
+        <input id="archivo" type="file" accept="image/*" required class="oculto-visual" />
+
+        <label for="foto-descripcion">Descripción</label>
+        <textarea id="foto-descripcion" rows="3" maxlength="500" placeholder="¿Qué pasó ese día?"></textarea>
+
+        <label for="foto-lugar">Lugar</label>
+        <input id="foto-lugar" type="text" maxlength="100" placeholder="¿Dónde fue?" />
+
+        <label for="foto-fecha">Fecha</label>
+        <input id="foto-fecha" type="date" />
+
+        <p id="foto-error" class="foto-error" role="alert"></p>
+
+        <div class="botones-confirmar">
+          <button type="button" id="cancelar-subir" class="boton-cancelar">Cancelar</button>
+          <button type="submit" id="boton-guardar-foto">Guardar foto</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- VENTANA PARA VER UNA FOTO EN GRANDE -->
+    <dialog id="ventana-ver" class="ventana-ver">
+      <button type="button" id="cerrar-ver" class="cerrar-ver" aria-label="Cerrar">✕</button>
+      <img id="foto-grande" alt="" />
+      <div class="foto-info">
+        <p id="ver-datos" class="foto-datos"></p>
+        <p id="ver-descripcion" class="foto-descripcion"></p>
+        <button type="button" id="borrar-foto" class="boton-eliminar" hidden>Eliminar foto</button>
+      </div>
+    </dialog>
+
     <script src="comun.js"></script>
+    <script src="galeria.js"></script>
   </body>
 </html>

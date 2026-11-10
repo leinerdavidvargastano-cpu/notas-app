@@ -36,7 +36,8 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
     ├── index.html     Página principal (recuerdos y reacciones)
     ├── script.js      Lógica de la página principal
     ├── comun.js       Código de todas las páginas: sesión, pantalla de carga, cerrar sesión
-    ├── galeria.html   Galería (próximamente)
+    ├── galeria.html   Galería de fotos
+    ├── galeria.js     Lógica de la galería: subir, ver y borrar fotos
     ├── calendario.html  Calendario (próximamente)
     ├── preguntas.html Preguntas (próximamente)
     ├── style.css      Estilos generales
@@ -134,6 +135,12 @@ UPDATE usuarios SET autor = NULL WHERE email = 'correo@ejemplo.com';
 | DELETE | `/api/notas/:id` | Sí | Elimina un recuerdo |
 | POST | `/api/notas/:id/reacciones` | Sí | Pone o quita una reacción (`{ "tipo": "encanta" }`) |
 
+| GET | `/api/fotos` | Sí | Lista las fotos (solo datos, sin imágenes; `mia` dice si la subiste tú) |
+| GET | `/api/fotos/:id/miniatura` | Sí | La foto pequeña (JPEG) |
+| GET | `/api/fotos/:id/imagen` | Sí | La foto grande (JPEG) |
+| POST | `/api/fotos` | Sí | Sube una foto (`imagen` y `miniatura` en base64, `descripcion`, `lugar`, `fecha`) |
+| DELETE | `/api/fotos/:id` | Sí | Borra una foto, solo si la subiste tú |
+
 Tipos de reacción válidos: `encanta`, `gusta`, `asombra`, `divierte`, `amen`, `ramon`.
 
 ## Despliegue
@@ -154,10 +161,10 @@ Cada cambio nuevo se hace en una rama (`git checkout -b nombre`), se prueba en l
 - Reacciones con contador, animaciones y texto de lo que se reaccionó
 - Confirmación antes de eliminar un recuerdo
 - Menú de navegación: Inicio, Galería, Calendario y Preguntas (fila en PC, barra abajo en celular)
+- Galería: cada uno sube fotos con descripción, lugar y fecha, y solo puede borrar las suyas. Las fotos se achican en el navegador (1600 px + miniatura de 480 px) y se guardan en Neon (tabla `fotos`, se crea sola)
 
 **Pendiente (del plan original)**
 
-- Galería de fotos en la nube, con descripción, lugar y fecha
 - Preguntas del día: cada persona no ve la respuesta de la otra hasta responder la suya
 - Calendario con recordatorios por correo (y después WhatsApp) usando n8n
 - Código de verificación por correo y cambio de contraseña
