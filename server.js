@@ -602,6 +602,99 @@ app.delete("/api/fotos/:id", requiereSesion, async function (req, res) {
 });
 
 
+// ---------- CALENDARIO ----------
+
+// LISTA DE EVENTOS: GET /api/eventos
+// Manda todos; la página calcula en qué días del mes aparece cada uno
+// (los que se repiten cada año salen en varios años).
+app.get("/api/eventos", requiereSesion, async function (req, res) {
+  try {
+    // to_char: fecha y hora como texto ("2026-11-10" y "18:30"), sin zonas horarias
+    const resultado = await pool.query(
+      `SELECT id, autor, titulo, descripcion, cada_anio,
+              to_char(fecha, 'YYYY-MM-DD') AS fecha,
+              to_char(hora, 'HH24:MI') AS hora,
+              usuario_id = $1 AS mio
+         FROM eventos
+        ORDER BY fecha, hora NULLS FIRST, id`,
+      [req.session.usuarioId]
+    );
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error("Error al leer los eventos:", error);
+    res.status(500).json({ error: "No se pudieron leer los eventos" });
+  }
+});
+
+// CREAR UN EVENTO: POST /api/eventos
+// Cuerpo: { titulo, descripcion, fecha, hora, cada_anio }
+app.post("/api/eventos", requiereSesion, async function (req, res) {
+  const titulo = (req.body.titulo || "").trim();
+  const descripcion = (req.body.descripcion || "").trim();
+  const fecha = (req.body.fecha || "").trim();
+  const hora = (req.body.hora || "").trim();
+  // === true: solo vale si llega exactamente true (no "sí", ni 1)
+  const cadaAnio = req.body.cada_anio === true;
+
+  if (titulo === "") {
+    return res.status(400).json({ error: "El evento necesita un título" });
+  }
+  if (titulo.length > 80) {
+    return res.status(400).json({ error: "El título es demasiado largo" });
+  }
+  if (descripcion.length > 500) {
+    return res.status(400).json({ error: "La descripción es demasiado larga" });
+  }
+  if (!fechaValida(fecha)) {
+    return res.status(400).json({ error: "La fecha no es válida" });
+  }
+  // Hora opcional, con forma HH:MM entre 00:00 y 23:59
+  if (hora !== "" && !/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) {
+    return res.status(400).json({ error: "La hora no es válida" });
+  }
+
+  try {
+    const autor = await autorDeLaSesion(req);
+    if (!autor) {
+      return res.status(400).json({ error: "Primero elige quién eres en Inicio" });
+    }
+
+    const resultado = await pool.query(
+      `INSERT INTO eventos (usuario_id, autor, titulo, descripcion, fecha, hora, cada_anio)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id`,
+      [req.session.usuarioId, autor, titulo, descripcion || null, fecha, hora || null, cadaAnio]
+    );
+    res.status(201).json({ id: resultado.rows[0].id });
+  } catch (error) {
+    console.error("Error al guardar el evento:", error);
+    res.status(500).json({ error: "No se pudo guardar el evento" });
+  }
+});
+
+// BORRAR UN EVENTO: DELETE /api/eventos/5  (solo quien lo creó)
+app.delete("/api/eventos/:id", requiereSesion, async function (req, res) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "El evento no es válido" });
+  }
+
+  try {
+    const resultado = await pool.query(
+      "DELETE FROM eventos WHERE id = $1 AND usuario_id = $2",
+      [id, req.session.usuarioId]
+    );
+    if (resultado.rowCount === 0) {
+      return res.status(403).json({ error: "Solo quien creó el evento puede borrarlo" });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error al borrar el evento:", error);
+    res.status(500).json({ error: "No se pudo borrar el evento" });
+  }
+});
+
+
 // ---------- CERRAR SESIÓN ----------
 // POST /api/logout
 app.post("/api/logout", function (req, res) {

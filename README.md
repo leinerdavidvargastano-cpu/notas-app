@@ -38,7 +38,8 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
     ├── comun.js       Código de todas las páginas: sesión, pantalla de carga, cerrar sesión
     ├── galeria.html   Galería de fotos
     ├── galeria.js     Lógica de la galería: subir, ver y borrar fotos
-    ├── calendario.html  Calendario (próximamente)
+    ├── calendario.html  Calendario
+    ├── calendario.js  Lógica del calendario: mes, eventos y próximos
     ├── preguntas.html Preguntas (próximamente)
     ├── style.css      Estilos generales
     ├── login.html     Pantalla de iniciar sesión y crear cuenta
@@ -141,6 +142,10 @@ UPDATE usuarios SET autor = NULL WHERE email = 'correo@ejemplo.com';
 | POST | `/api/fotos` | Sí | Sube una foto (`imagen` y `miniatura` en base64, `descripcion`, `lugar`, `fecha`) |
 | DELETE | `/api/fotos/:id` | Sí | Borra una foto, solo si la subiste tú |
 
+| GET | `/api/eventos` | Sí | Lista todos los eventos del calendario (`mio` dice si lo creaste tú) |
+| POST | `/api/eventos` | Sí | Crea un evento (`titulo`, `fecha`, `hora`, `descripcion`, `cada_anio`) |
+| DELETE | `/api/eventos/:id` | Sí | Borra un evento, solo si lo creaste tú |
+
 Tipos de reacción válidos: `encanta`, `gusta`, `asombra`, `divierte`, `amen`, `ramon`.
 
 ## Despliegue
@@ -163,8 +168,10 @@ Cada cambio nuevo se hace en una rama (`git checkout -b nombre`), se prueba en l
 - Menú de navegación: Inicio, Galería, Calendario y Preguntas (fila en PC, barra abajo en celular)
 - Galería: cada uno sube fotos con descripción, lugar y fecha, y solo puede borrar las suyas. Las fotos se achican en el navegador (1600 px + miniatura de 480 px) y se guardan en Neon (tabla `fotos`, se crea sola)
 
+- Calendario: vista del mes, eventos con hora y descripción opcionales, eventos que se repiten cada año (cuenta los años), lista de próximos eventos. Solo quien crea un evento lo borra (tabla `eventos`, se crea sola)
+
 **Pendiente (del plan original)**
 
 - Preguntas del día: cada persona no ve la respuesta de la otra hasta responder la suya
-- Calendario con recordatorios por correo (y después WhatsApp) usando n8n
+- Recordatorios del calendario por correo (y después WhatsApp) usando n8n
 - Código de verificación por correo y cambio de contraseña

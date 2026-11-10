@@ -732,3 +732,181 @@ button:disabled { opacity: 0.6; cursor: wait; }
   font-size: 1.1rem;
 }
 .cerrar-ver:hover { background: rgba(0, 0, 0, 0.8); }
+
+
+/* ---------- CALENDARIO ---------- */
+.calendario {
+  width: min(100% - 2rem, 1200px);
+  margin: 1.5rem auto 0;
+}
+
+/* En PC: el mes a la izquierda y las listas a la derecha */
+.calendario-cuerpo {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .calendario-cuerpo { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
+
+.mes,
+.agenda-bloque {
+  padding: 1rem;
+  background: rgba(255, 250, 243, 0.94);
+  border: 1px solid var(--vino);
+  border-radius: 16px;
+}
+
+/* Barra con las flechas y el nombre del mes */
+.mes-barra {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.mes-barra h3 {
+  flex: 1;
+  text-align: center;
+  font: italic 1.4rem Georgia, serif;
+  color: var(--vino);
+}
+.mes-barra h3::first-letter { text-transform: uppercase; }   /* "noviembre" → "Noviembre" */
+.mes-flecha {
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.mes-hoy { padding: 0.45rem 0.9rem; border-radius: 999px; }
+
+/* 7 columnas iguales, una por día de la semana */
+.mes-dias-semana,
+.mes-dias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.mes-dias-semana {
+  margin-bottom: 0.3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--suave);
+  text-transform: uppercase;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.15rem;
+  min-height: 5.2rem;
+  padding: 0.3rem;
+  background: #fff;
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-weight: 400;
+  text-align: left;
+  overflow: hidden;
+}
+.dia:hover { background: var(--rosa); }
+.dia-numero { font-size: 0.85rem; font-weight: 700; }
+
+/* Hoy: número en un círculo con los colores del logo */
+.dia.hoy .dia-numero {
+  align-self: flex-start;
+  min-width: 1.6rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--azul-logo), var(--rosa-logo));
+  color: #fff;
+  text-align: center;
+}
+
+/* El día elegido: borde azul grueso */
+.dia[aria-pressed="true"] { border: 2px solid var(--vino-claro); background: #eef4ff; }
+
+/* Cada evento dentro del día: azul si es de Lele, rosa si es de Mayita */
+.dia-evento {
+  display: block;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  background: var(--azul-logo);
+  color: #fff;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dia-evento.mayita { background: var(--rosa-logo); }
+.dia-mas { font-size: 0.7rem; color: var(--suave); }
+
+/* ---------- LISTAS DE EVENTOS ---------- */
+.agenda { display: flex; flex-direction: column; gap: 1.25rem; }
+.agenda-bloque h3 { font: italic 1.15rem Georgia, serif; color: var(--vino); margin-bottom: 0.6rem; }
+.agenda-vacio { color: var(--suave); font-size: 0.9rem; }
+
+.eventos { display: flex; flex-direction: column; gap: 0.5rem; padding: 0; list-style: none; }
+.evento {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #fff;
+  border-left: 4px solid var(--azul-logo);
+  border-radius: 8px;
+}
+.evento.mayita { border-left-color: var(--rosa-logo); }
+.evento-cuerpo { flex: 1; min-width: 0; }
+.evento-cuerpo strong { display: block; overflow-wrap: anywhere; }
+.evento-datos { display: block; font-size: 0.8rem; color: var(--suave); }
+.evento-cuerpo p { margin-top: 0.25rem; font-size: 0.9rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.evento-borrar {
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--suave);
+  border: 1px solid var(--borde);
+  font-size: 0.8rem;
+}
+.evento-borrar:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+/* ---------- VENTANA NUEVO EVENTO ---------- */
+.fila-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.fila-campos > div { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-foto .casilla { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; cursor: pointer; }
+.form-foto .casilla input { width: auto; accent-color: var(--vino-claro); }
+
+/* Celular: días más bajos y los eventos se vuelven puntitos de color */
+@media (max-width: 560px) {
+  .mes { padding: 0.6rem; }
+  .mes-dias, .mes-dias-semana { gap: 0.2rem; }
+  .dia {
+    min-height: 3rem;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.25rem 0.1rem;
+  }
+  .dia-numero { width: 100%; text-align: center; }
+  .dia.hoy .dia-numero { align-self: center; width: auto; }
+  .dia-evento {
+    width: 0.45rem;
+    height: 0.45rem;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;          /* esconde el título; queda solo el punto */
+  }
+  .dia-mas { display: none; }
+  .fila-campos { grid-template-columns: 1fr; }
+}

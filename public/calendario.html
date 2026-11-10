@@ -21,8 +21,7 @@
             <noscript><style>.pantalla-carga { display: none; }</style></noscript>
       </head>
 
-  <!-- data-pagina-simple: comun.js revisa la sesión y quita la pantalla de carga -->
-  <body data-pagina-simple>    
+  <body>    
     <!-- Pantalla de carga: cubre toda la página hasta confirmar la sesión -->
     <!-- role="status" y aria-live: un lector de pantalla anuncia los cambios del texto -->
     <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
@@ -81,16 +80,91 @@
       </nav>
     </header>
 
-    <main class="contenedor">
-      <!-- Tarjeta temporal: aquí irá la calendario cuando la programemos -->
-      <section class="proximamente">
-        <p class="proximamente-emoji" aria-hidden="true">📅</p>
-        <h2>Calendario</h2>
-        <p>Fechas especiales y recordatorios.</p>
-        <p class="proximamente-etiqueta">Próximamente</p>
-      </section>
+    <main class="calendario">
+
+      <div class="galeria-cabecera calendario-cabecera">
+        <div>
+          <h2>Calendario</h2>
+          <p>Fechas especiales y recordatorios.</p>
+        </div>
+        <button type="button" id="abrir-evento" class="boton-subir">+ Nuevo evento</button>
+      </div>
+
+      <div class="calendario-cuerpo">
+
+        <!-- EL MES -->
+        <section class="mes" aria-label="Mes">
+          <div class="mes-barra">
+            <button type="button" id="mes-anterior" class="mes-flecha" aria-label="Mes anterior">‹</button>
+            <!-- aria-live: un lector de pantalla anuncia el mes nuevo al cambiarlo -->
+            <h3 id="mes-titulo" aria-live="polite"></h3>
+            <button type="button" id="mes-siguiente" class="mes-flecha" aria-label="Mes siguiente">›</button>
+            <button type="button" id="ir-hoy" class="boton-cancelar mes-hoy">Hoy</button>
+          </div>
+
+          <!-- Nombres de los días: la semana empieza el lunes -->
+          <div class="mes-dias-semana" aria-hidden="true">
+            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          </div>
+          <!-- Aquí el JavaScript pone un botón por cada día -->
+          <div id="mes-dias" class="mes-dias"></div>
+        </section>
+
+        <!-- LISTAS: el día elegido y los próximos eventos -->
+        <aside class="agenda">
+          <section class="agenda-bloque">
+            <h3 id="dia-titulo"></h3>
+            <ul id="dia-eventos" class="eventos"></ul>
+            <p id="dia-vacio" class="agenda-vacio" hidden>Nada este día.</p>
+          </section>
+
+          <section class="agenda-bloque">
+            <h3>Próximos eventos</h3>
+            <ul id="proximos" class="eventos"></ul>
+            <p id="proximos-vacio" class="agenda-vacio" hidden>No hay eventos próximos.</p>
+          </section>
+        </aside>
+
+      </div>
     </main>
 
+    <!-- VENTANA PARA CREAR UN EVENTO -->
+    <dialog id="ventana-evento" class="selector ventana-foto">
+      <form id="form-evento" class="form-foto">
+        <h2>Nuevo evento</h2>
+
+        <label for="evento-titulo">Título</label>
+        <input id="evento-titulo" type="text" maxlength="80" placeholder="Ej.: Nuestro aniversario" required />
+
+        <div class="fila-campos">
+          <div>
+            <label for="evento-fecha">Fecha</label>
+            <input id="evento-fecha" type="date" required />
+          </div>
+          <div>
+            <label for="evento-hora">Hora (opcional)</label>
+            <input id="evento-hora" type="time" />
+          </div>
+        </div>
+
+        <label for="evento-descripcion">Descripción (opcional)</label>
+        <textarea id="evento-descripcion" rows="3" maxlength="500" placeholder="Detalles, lugar, qué llevar…"></textarea>
+
+        <label class="casilla">
+          <input id="evento-cada-anio" type="checkbox" />
+          Se repite cada año (cumpleaños, aniversarios)
+        </label>
+
+        <p id="evento-error" class="foto-error" role="alert"></p>
+
+        <div class="botones-confirmar">
+          <button type="button" id="cancelar-evento" class="boton-cancelar">Cancelar</button>
+          <button type="submit" id="guardar-evento">Guardar evento</button>
+        </div>
+      </form>
+    </dialog>
+
     <script src="comun.js"></script>
+    <script src="calendario.js"></script>
   </body>
 </html>

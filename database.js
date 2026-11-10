@@ -62,6 +62,22 @@ async function iniciarBaseDeDatos() {
     )
   `);
 
+  // Calendario: fechas especiales. DATE guarda solo el día; TIME solo la hora.
+  // cada_anio = true: se repite todos los años (cumpleaños, aniversarios).
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS eventos (
+      id SERIAL PRIMARY KEY,
+      usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+      autor TEXT NOT NULL,
+      titulo TEXT NOT NULL,
+      descripcion TEXT,
+      fecha DATE NOT NULL,
+      hora TIME,
+      cada_anio BOOLEAN NOT NULL DEFAULT false,
+      creado_en TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   console.log("Base de datos PostgreSQL lista");
 }
 
