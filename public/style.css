@@ -465,3 +465,114 @@ button:hover { background: var(--vino); }
   }
 }
 
+
+
+/* ---------- MENÚ DE NAVEGACIÓN ---------- */
+/* En PC: una fila de "pastillas" centrada debajo del título */
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  max-width: 960px;
+  margin: 0.35rem auto 0.15rem;
+}
+
+.menu-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  color: var(--suave);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.menu-item:hover { background: var(--borde); color: var(--vino); }
+.menu-item:focus-visible { outline: 2px solid var(--vino-claro); outline-offset: 2px; }
+
+/* La página en la que estás: fondo azul y texto blanco */
+.menu-item[aria-current="page"] { background: var(--vino-claro); color: #fff; }
+
+.menu-item svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* En PC el header es más alto por el menú: el formulario baja un poco */
+@media (min-width: 800px) {
+  .formulario { top: 150px; max-height: calc(100vh - 170px); }
+}
+
+/* Celular: el menú se vuelve una barra fija abajo, como en las apps */
+@media (max-width: 560px) {
+  /* backdrop-filter en el header haría que la barra "fixed" se pegue al header
+     y no a la pantalla, así que en celular lo quitamos y usamos un fondo más sólido */
+  .header {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(255, 250, 243, 0.98);
+  }
+
+  .menu {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    margin: 0;
+    gap: 0;
+    justify-content: space-around;
+    /* env(safe-area-inset-bottom): espacio de la barrita del iPhone */
+    padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+    background: rgba(255, 250, 243, 0.98);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Icono arriba y texto abajo */
+  .menu-item {
+    flex: 1;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.35rem 0.25rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+  }
+  .menu-item svg { width: 1.4rem; height: 1.4rem; }
+
+  /* Espacio abajo para que la barra no tape el último recuerdo */
+  body { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+}
+
+
+/* ---------- TARJETA "PRÓXIMAMENTE" ---------- */
+.proximamente {
+  grid-column: 1 / -1;     /* en PC ocupa todo el ancho de la cuadrícula */
+  max-width: 480px;
+  margin: 2rem auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: rgba(255, 250, 243, 0.94);
+  border: 1px solid var(--vino);
+  border-radius: 16px;
+}
+.proximamente-emoji { font-size: 3rem; line-height: 1; margin-bottom: 0.5rem; }
+.proximamente h2 { font: italic 1.6rem Georgia, serif; color: var(--vino); margin-bottom: 0.4rem; }
+.proximamente p { color: var(--suave); }
+.proximamente-etiqueta {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--azul-logo), var(--rosa-logo));
+  color: #fff !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

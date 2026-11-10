@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+        <!-- Ficha de la app instalable -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#fffaf3" />
+
+    <!-- Para iPhone (iOS ignora parte del manifiesto y usa estas etiquetas) -->
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MAYLEN" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galería · Nuestros recuerdos</title>
+    <link rel="stylesheet" href="style.css" />
+        <!-- Icono que aparece en la pestaña del navegador -->
+        <link rel="icon" href="img/logo_maylen.ico" sizes="any" />
+        
+            <noscript><style>.pantalla-carga { display: none; }</style></noscript>
+      </head>
+
+  <!-- data-pagina-simple: comun.js revisa la sesión y quita la pantalla de carga -->
+  <body data-pagina-simple>    
+    <!-- Pantalla de carga: cubre toda la página hasta confirmar la sesión -->
+    <!-- role="status" y aria-live: un lector de pantalla anuncia los cambios del texto -->
+    <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
+      <img class="carga-logo" src="img/logo.png" alt="MAYLEN" width="140" height="140" />
+      <div class="carga-anillo" aria-hidden="true"></div>
+      <p class="carga-texto" id="carga-texto">Cargando…</p>
+      <!-- Solo aparece si algo falla -->
+      <button type="button" id="carga-reintentar" class="boton-texto" hidden>Reintentar</button>
+    </div>
+        
+        <header class="header">
+      <div class="header-interior">
+
+        <!-- Logo a la izquierda. alt="" porque el enlace ya tiene su aria-label -->
+        <a class="header-logo" href="/" aria-label="MAYLEN, ir al inicio">
+          <img src="img/logo.png" alt="" width="72" height="72" />
+        </a>
+
+        <!-- Título en el centro -->
+        <div class="header-titulo">
+          <h1>Nuestros recuerdos</h1>
+          <p class="subtitulo">Lo que no queremos olvidar</p>
+        </div>
+
+        <!-- Cerrar sesión a la derecha. Conserva el id="cerrar-sesion": tu JavaScript lo usa -->
+        <button type="button" id="cerrar-sesion" class="boton-salir" aria-label="Cerrar sesión">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          <span class="boton-salir-texto">Cerrar sesión</span>
+        </button>
+
+      </div>
+
+      <!-- Menú: en PC va debajo del título; en celular, fijo abajo como una app -->
+      <!-- marca la página en la que estás -->
+      <nav class="menu" aria-label="Menú principal">
+        <a class="menu-item" href="/">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" /></svg>
+          <span>Inicio</span>
+        </a>
+        <a class="menu-item" href="/galeria.html" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="m21 16-5-5-9 9" /></svg>
+          <span>Galería</span>
+        </a>
+        <a class="menu-item" href="/calendario.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>
+          <span>Calendario</span>
+        </a>
+        <a class="menu-item" href="/preguntas.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z" /><path d="M9.8 9.5a2.3 2.3 0 0 1 4.4.8c0 1.5-2.2 2-2.2 3.2" /><path d="M12 16.5h.01" /></svg>
+          <span>Preguntas</span>
+        </a>
+      </nav>
+    </header>
+
+    <main class="contenedor">
+      <!-- Tarjeta temporal: aquí irá la galería cuando la programemos -->
+      <section class="proximamente">
+        <p class="proximamente-emoji" aria-hidden="true">📷</p>
+        <h2>Galería</h2>
+        <p>Nuestras fotos, con la historia de cada una.</p>
+        <p class="proximamente-etiqueta">Próximamente</p>
+      </section>
+    </main>
+
+    <script src="comun.js"></script>
+  </body>
+</html>

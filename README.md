@@ -35,6 +35,10 @@ Publicada en **Render**, con la base de datos en **Neon** (PostgreSQL).
 └── public/            Lo que ve el navegador
     ├── index.html     Página principal (recuerdos y reacciones)
     ├── script.js      Lógica de la página principal
+    ├── comun.js       Código de todas las páginas: sesión, pantalla de carga, cerrar sesión
+    ├── galeria.html   Galería (próximamente)
+    ├── calendario.html  Calendario (próximamente)
+    ├── preguntas.html Preguntas (próximamente)
     ├── style.css      Estilos generales
     ├── login.html     Pantalla de iniciar sesión y crear cuenta
     ├── login.js       Lógica de login y registro
@@ -149,10 +153,10 @@ Cada cambio nuevo se hace en una rama (`git checkout -b nombre`), se prueba en l
 - Pantalla de login con estilos
 - Reacciones con contador, animaciones y texto de lo que se reaccionó
 - Confirmación antes de eliminar un recuerdo
+- Menú de navegación: Inicio, Galería, Calendario y Preguntas (fila en PC, barra abajo en celular)
 
 **Pendiente (del plan original)**
 
-- Menú de navegación: Inicio, Galería, Calendario y Preguntas
 - Galería de fotos en la nube, con descripción, lugar y fecha
 - Preguntas del día: cada persona no ve la respuesta de la otra hasta responder la suya
 - Calendario con recordatorios por correo (y después WhatsApp) usando n8n

@@ -1,57 +1,5 @@
-// ---------- PANTALLA DE CARGA Y GUARDIA DE SESIÓN ----------
-const pantallaCarga = document.querySelector("#pantalla-carga");
-const textoCarga = document.querySelector("#carga-texto");
-const botonReintentar = document.querySelector("#carga-reintentar");
-
-// Si tarda más de 6 segundos, avisamos para que no parezca que se trabó
-const avisoLento = setTimeout(function () {
-  textoCarga.textContent = "Esto está tardando más de lo normal…";
-}, 6000);
-
-function ocultarPantallaCarga() {
-  clearTimeout(avisoLento);
-  pantallaCarga.classList.add("oculta");
-}
-
-// Si el servidor no responde, mostramos un mensaje y el botón para reintentar
-function mostrarErrorCarga() {
-  clearTimeout(avisoLento);
-  textoCarga.textContent = "No se pudo conectar con el servidor.";
-  botonReintentar.hidden = false;
-}
-
-botonReintentar.addEventListener("click", function () {
-  window.location.reload();
-});
-
-// Pregunta al servidor quién tiene la sesión (la cookie viaja sola).
-// Devuelve los datos de la cuenta ({ id, email, autor }) o null si no hay sesión.
-async function verificarSesion() {
-  try {
-    const respuesta = await fetch("/api/yo");
-
-    if (respuesta.ok) return await respuesta.json();
-
-    if (respuesta.status === 401) {
-      // Sin sesión: vamos al login SIN quitar la pantalla de carga.
-      // "replace" no deja la página actual en el historial, así que el botón
-      // "atrás" no devuelve a una pantalla que rebota otra vez al login.
-      window.location.replace("/login.html");
-      return null;
-    }
-
-    // Cualquier otro error del servidor
-    mostrarErrorCarga();
-    return null;
-  } catch (error) {
-    // No hubo conexión
-    mostrarErrorCarga();
-    return null;
-  }
-}
-
-
-
+// Página de INICIO (recuerdos). Usa funciones de comun.js:
+// verificarSesion, ocultarPantallaCarga y sesionVencida.
 
 // ---------- 1. DATOS Y ELEMENTOS ----------
 const URL_API = "/api/notas";
@@ -103,15 +51,6 @@ let autor = null;
 
 
 // ---------- 2. HABLAR CON EL SERVIDOR ----------
-
-// Si la sesión venció (401), manda al login. Devuelve true si redirigió.
-function sesionVencida(respuesta) {
-  if (respuesta.status === 401) {
-    window.location.href = "/login.html";
-    return true;
-  }
-  return false;
-}
 
 async function cargarNotas() {
   try {
@@ -389,22 +328,7 @@ arrancar();
 
 
 
-// ---------- 7. CERRAR SESIÓN ----------
-document.querySelector("#cerrar-sesion").addEventListener("click", async function () {
-  try {
-    // Le avisamos al servidor: borra la sesión en Neon y la cookie del navegador
-    await fetch("/api/logout", { method: "POST" });
-  } catch (error) {
-    console.error("No se pudo cerrar la sesión:", error);
-  }
-  // Pase lo que pase, mandamos a la pantalla de entrada
-  window.location.href = "/login.html";
-});
-
-
-
-
-// ---------- 8. CONFIRMAR ANTES DE ELIMINAR ----------
+// ---------- 7. CONFIRMAR ANTES DE ELIMINAR ----------
 
 // Se ejecuta al presionar "Eliminar": NO borra, solo abre la ventana
 function pedirConfirmacion(id, titulo) {
@@ -434,14 +358,3 @@ document.querySelector("#confirmar-si").addEventListener("click", async function
     await eliminarNota(id);
   }
 });
-
-
-// ---------- REGISTRAR EL SERVICE WORKER ----------
-// Se registra cuando la página termina de cargar, para no frenar la pantalla de carga
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js").catch(function (error) {
-      console.error("No se pudo registrar el service worker:", error);
-    });
-  });
-}
